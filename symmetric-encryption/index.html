@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <script src="lib/crypto-js.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/customizations.js"></script>
+  <link rel="stylesheet" href="css/style.css" />
+  <title>AES symmetric encryption</title>
+</head>
+<body>
+  <div id="contents">
+    <h2>AES symmetric encryption:</h2>
+    <textarea id="cleartext" placeholder="clear text"></textarea>
+    <input type="text" id="passphrase" placeholder="passphrase" />
+    <textarea id="ciphertext" placeholder="cipher text"></textarea>
+    <div>
+      <button id="encrypt">Encrypt</button>
+      <button id="decrypt">Decrypt</button>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+#contents {
+  width: 90%;
+  margin: 1em auto;
+  padding: 1em;
+}
+
+#contents > * {
+  display: block;
+  width: 100%;
+  margin: 1em 0;
+}
+#contents > textarea {
+  height: 15em;
+}

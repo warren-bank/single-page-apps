@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Crx Format Checker</title>
+  <script src="js/protobuf.js"></script>
+  <script src="js/asn1.js"></script>
+  <script>
+    let crx_magic = [67, 114, 50, 52];
+    let crx_magic_diff = [67, 114, 79, 68];
+
+    function makeReadCallback(f, reader) {
+      return function() {
+        let outcome = "";
+        let out = new DataView(reader.result);
+        let crx_m = true;
+        let crxd_m = true;
+        for (let i = 0; i < crx_magic.length; i++) {
+          if (out.getUint8(i) != crx_magic[i]) crx_m = false;
+          if (out.getUint8(i) != crx_magic_diff[i]) crxd_m = false;
+        }
+        if (!crx_m && !crxd_m) {
+          makeNotACrxOutput(f.name);
+          return;
+        }
+        let format = out.getUint32(4, true);
+        if (format == 2) parseCrx2(f.name, out, crxd_m);
+        else if (format == 3) parseCrx3(f.name, out, crxd_m);
+        else makeUnknownCrxOutput(f.name, format, crxd_m);
+      }
+    }
+
+    function check() {
+      document.getElementById("output").innerHTML = "";
+      for (let f of document.getElementById("file").files) {
+        let reader = new FileReader();
+        reader.addEventListener("loadend", makeReadCallback(f, reader));
+        reader.readAsArrayBuffer(f);
+      }
+    }
+
+    function concat(buffers) {
+      let length = 0;
+      for (let b of buffers) length += b.length;
+      let tmp = new Uint8Array(length);
+      let offset = 0;
+      for (let b of buffers) {
+        tmp.set(b, offset);
+        offset += b.byteLength;
+      }
+      return tmp.buffer;
+    }
+
+    function toLittleEndian(uint32) {
+      let b = new ArrayBuffer(4);
+      new DataView(b).setUint32(0, uint32, true);
+      return new Uint8Array(b);
+    }
+
+    // This is kind of exotic and may be buggy. We assume we're only dealing with the P-256 curve so we want 32 bytes for R and S.
+    // The root issue here is that CRX3 encodes ECDSA signatures in DER-encoded (OpenSSL-like) format, but subtle.crypto expects them as a concatenated R|S pair, where R and S are of equal size.
+    function der2webcrypto(ecdsaSig) {
+      let decoded = ASN1.decode(ecdsaSig);
+      let r = decoded.sub[0];
+      let s = decoded.sub[1];
+      function setTo32Bytes(uint8array) {
+        if (uint8array.length > 32) return uint8array.slice(uint8array.length - 32, uint8array.length); // Trim leading 0s added by the DER encoding.
+        if (uint8array.length < 32) {
+          let buff = new UInt8Array(32);
+          buff.set(uint8array, 32 - uint8array.length);
+          return buff;
+        }
+        return uint8array;
+      }
+      return concat(
+          [
+            setTo32Bytes(r.stream.enc.slice(r.stream.pos + r.header, r.stream.pos + r.header + r.length)),
+            setTo32Bytes(s.stream.enc.slice(s.stream.pos + s.header, s.stream.pos + s.header + s.length)),
+          ]);
+    }
+
+    function compareHashes(a, b) {
+      a = new Uint8Array(a);
+      if (a.length != b.length) return false;
+      for (let i = 0; i < a.length; i++) if (a[i] != b[i]) return false;
+      return true;
+    }
+
+    // Tests the SHA256 hash of the DER SPKI "ecdsa_2017_public" Crx3 key. This is taken from Chromium's //src/components/crx_file/crx_verifier.cc.
+    function isGoogleKey(hash) {
+      return compareHashes(hash, [0x61, 0xf7, 0xf2, 0xa6, 0xbf, 0xcf, 0x74, 0xcd, 0x0b, 0xc1, 0xfe, 0x24, 0x97, 0xcc, 0x9b, 0x04, 0x25, 0x4c, 0x65, 0x8f, 0x79, 0xf2, 0x14, 0x53, 0x92, 0x86, 0x7e, 0xa8, 0x36, 0x63, 0x67, 0xcf]);
+    }
+
+    // Tests the SHA256 hash of the DER SPKI "ecdsa_2017_public" Crx3 test key. This is taken from Chromium's //src/components/crx_file/crx_verifier.cc.
+    function isGoogleTestKey(hash) {
+      return compareHashes(hash, [0x6c, 0x46, 0x41, 0x3b, 0x00, 0xd0, 0xfa, 0x0e, 0x72, 0xc8, 0xd2, 0x5f, 0x64, 0xf3, 0xa6, 0x17, 0x03, 0x0d, 0xde, 0x21, 0x61, 0xbe, 0xb7, 0x95, 0x91, 0x95, 0x83, 0x68, 0x12, 0xe9, 0x78, 0x1e]);
+    }
+
+    function isWebstoreKey(hash) {
+      return compareHashes(hash, [0xb5, 0xe4, 0x09, 0x62, 0x27, 0xb8, 0x3f, 0x82, 0x10, 0x1f, 0xc2, 0xaa, 0x49, 0xf2, 0xa2, 0x51, 0xac, 0xcd, 0xe3, 0xd9, 0x84, 0x71, 0x46, 0x4d, 0xd1, 0x7d, 0x18, 0x19, 0xb4, 0x37, 0x86, 0xb0]);
+    }
+
+    function parseCrx3(filename, data, isdiff) {
+      let headerSize = data.getUint32(8, true);
+      protobuf.load("data/crx3.proto").then(function (root) {
+        let SignedData = root.lookupType("crx_file.SignedData"); 
+        let AsymmetricKeyProof = root.lookupType("crx_file.AsymmetricKeyProof"); 
+        let header = root.lookupType("crx_file.CrxFileHeader").decode(new Uint8Array(data.buffer.slice(12, 12 + headerSize)));
+        let signedData = root.lookupType("crx_file.SignedData").decode(header.signedHeaderData);
+        let body = concat([new TextEncoder("utf-8").encode("CRX3 SignedData\x00"), toLittleEndian(header.signedHeaderData.length), header.signedHeaderData, new Uint8Array(data.buffer.slice(12 + headerSize))]);
+        let crxid = signedData.crxId;
+        let signatures = [];
+        let lastTask = () => makeCrx3Output(filename, isdiff, toMpDecimal(crxid), signatures, header.verifiedContents);
+        let makeVerificationTask = function (proof, import_alg, verify_alg, body, next) {
+          return () => {
+              let summary = {"alg": import_alg.name, "sig": proof.signature, "key": proof.publicKey, "passed": false};
+              signatures.push(summary);
+              window.crypto.subtle.digest("SHA-256", proof.publicKey)
+                  .then(
+                      keyHash => {
+                          if (toMpDecimal(crxid) == toMpDecimal(keyHash)) summary.developer = true;
+                          if (isGoogleKey(keyHash)) summary.google = true;
+                          if (isGoogleTestKey(keyHash)) summary.googletest = true;
+                          if (isWebstoreKey(keyHash)) summary.webstore = true;
+                          window.crypto.subtle.importKey(
+                              "spki",
+                              proof.publicKey,
+                              import_alg,
+                              false,
+                              ["verify"])
+                          .then(
+                              key =>
+                                crypto.subtle.verify(verify_alg, key, import_alg.name == "ECDSA" ? der2webcrypto(proof.signature) : proof.signature, body)
+                                    .then(
+                                        result => {
+                                          summary.passed = result;
+                                          next();
+                                        },
+                                        error => {
+                                          summary.note = "verification: " + error.name + ": " + error.message;
+                                          next();
+                                        }),
+                              error => {
+                                summary.note = "key loading: " + error.name + ": " + error.message;
+                                next();
+                              })},
+                      error => {
+                        summary.note = "failed to hash key: " + error.name + ": " + error.message;
+                        next();
+                      });
+          };
+        }
+        for (let p of header.sha256WithRsa) {
+          lastTask = makeVerificationTask(p, {"name": "RSASSA-PKCS1-v1_5", "hash": "SHA-256"}, "RSASSA-PKCS1-v1_5", body, lastTask);
+        }
+        for (let p of header.sha256WithEcdsa) {
+          lastTask = makeVerificationTask(p, {"name": "ECDSA", "namedCurve": "P-256"}, {"name": "ECDSA", "hash": "SHA-256"}, body, lastTask);
+        }
+        lastTask();
+      });
+    }
+
+    function toMpDecimal(data) {
+      return Array.prototype.map.call(new Uint8Array(data.slice(0, 16)), x => String.fromCharCode(97 + ((x >> 4) & 0xf)) + String.fromCharCode(97 + (x & 0xf))).join("");
+    }
+
+    function parseCrx2(filename, data, isDiff) {
+      let keysize = data.getUint32(8, true);
+      let sigsize = data.getUint32(12, true);
+      let keyBuf = data.buffer.slice(16, 16 + keysize);
+      let sig = data.buffer.slice(16 + keysize, 16 + keysize + sigsize);
+      let body = data.buffer.slice(16 + keysize + sigsize);
+      window.crypto.subtle.digest("SHA-256", keyBuf).then(crxid =>
+          window.crypto.subtle.importKey(
+            "spki",
+            keyBuf,
+            {"name": "RSASSA-PKCS1-v1_5", "hash": "SHA-1"},
+            false,
+            ["verify"])
+          .then(key =>
+              crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, sig, body)
+              //RETER
+                  .then(result => makeCrx2Output(filename, isDiff, toMpDecimal(crxid), {"alg": "RSASSA-PKCS1-v1_5", "key": new Uint8Array(keyBuf), "sig": new Uint8Array(sig), "passed": result, "developer": true}))
+                  .catch(error => makeCrx2Output(filename, isDiff, toMpDecimal(crxid), {"alg": "RSASSA-PKCS1-v1_5", "key": new Uint8Array(keyBuf), "sig": new Uint8Array(sig), "passed": false, "developer": true, "note": error.message })))
+          .catch(error => makeCrx2Output(filename, isDiff, toMpDecimal(crxid), {"alg": "RSASSA-PKCS1-v1_5", "key": new Uint8Array(keyBuf), "sig": new Uint8Array(sig), "passed": false, "developer": true, "note": error.message })))
+      .catch(error => makeCrx2Output(filename, isDiff, "hash failed", {"alg": "RSASSA-PKCS1-v1_5", "key": new Uint8Array(keyBuf), "sig": new Uint8Array(sig), "passed": false, "developer": true, "note": error.message }));
+    }
+
+    // DISPLAY FUNCTIONS ======================================
+    function binToB64(bin) {
+      let v = "";
+      for (let i of bin) v += String.fromCharCode(i);
+      return window.btoa(v);
+    }
+
+    function makeIcon(path, tooltip) {
+      let s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      s.style.width = "24px";
+      s.setAttribute("viewBox", "0 0 24 24");
+      let p = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      p.setAttribute("d", path);
+      p.setAttribute("fill", "currentColor");
+      s.appendChild(p);
+      let t = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      t.appendChild(document.createTextNode(tooltip));
+      s.appendChild(t);
+      return s;
+    }
+
+    function makeIconSigPassed() {
+      return makeIcon("M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z", "Signature verifies.");
+    }
+
+    function makeIconSigFailed() {
+      return makeIcon("M23,12L20.56,9.22L20.9,5.54L17.29,4.72L15.4,1.54L12,3L8.6,1.54L6.71,4.72L3.1,5.53L3.44,9.21L1,12L3.44,14.78L3.1,18.47L6.71,19.29L8.6,22.47L12,21L15.4,22.46L17.29,19.28L20.9,18.46L20.56,14.78L23,12M13,17H11V15H13V17M13,13H11V7H13V13Z", "Signature fails to verify.");
+    }
+    function makeIconDeveloper() {
+      return makeIcon("M20.5,11H19V7C19,5.89 18.1,5 17,5H13V3.5A2.5,2.5 0 0,0 10.5,1A2.5,2.5 0 0,0 8,3.5V5H4A2,2 0 0,0 2,7V10.8H3.5C5,10.8 6.2,12 6.2,13.5C6.2,15 5,16.2 3.5,16.2H2V20A2,2 0 0,0 4,22H7.8V20.5C7.8,19 9,17.8 10.5,17.8C12,17.8 13.2,19 13.2,20.5V22H17A2,2 0 0,0 19,20V16H20.5A2.5,2.5 0 0,0 23,13.5A2.5,2.5 0 0,0 20.5,11Z", "Developer's signature.");
+    }
+    function makeIconGoogle() {
+      return makeIcon("M21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12C5,7.9 8.2,4.73 12.2,4.73C15.29,4.73 17.1,6.7 17.1,6.7L19,4.72C19,4.72 16.56,2 12.1,2C6.42,2 2.03,6.8 2.03,12C2.03,17.05 6.16,22 12.25,22C17.6,22 21.5,18.33 21.5,12.91C21.5,11.76 21.35,11.1 21.35,11.1V11.1Z", "Google's signature.");
+    }
+    function makeIconGoogleTest() {
+      return makeIcon("M14,12H10V10H14M14,16H10V14H14M20,8H17.19C16.74,7.22 16.12,6.55 15.37,6.04L17,4.41L15.59,3L13.42,5.17C12.96,5.06 12.5,5 12,5C11.5,5 11.04,5.06 10.59,5.17L8.41,3L7,4.41L8.62,6.04C7.88,6.55 7.26,7.22 6.81,8H4V10H6.09C6.04,10.33 6,10.66 6,11V12H4V14H6V15C6,15.34 6.04,15.67 6.09,16H4V18H6.81C7.85,19.79 9.78,21 12,21C14.22,21 16.15,19.79 17.19,18H20V16H17.91C17.96,15.67 18,15.34 18,15V14H20V12H18V11C18,10.66 17.96,10.33 17.91,10H20V8Z", "Google's test signature.");
+    }
+    function makeIconWebstore() {
+      return makeIcon("M12,20L15.46,14H15.45C15.79,13.4 16,12.73 16,12C16,10.8 15.46,9.73 14.62,9H19.41C19.79,9.93 20,10.94 20,12A8,8 0 0,1 12,20M4,12C4,10.54 4.39,9.18 5.07,8L8.54,14H8.55C9.24,15.19 10.5,16 12,16C12.45,16 12.88,15.91 13.29,15.77L10.89,19.91C7,19.37 4,16.04 4,12M15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9A3,3 0 0,1 15,12M12,4C14.96,4 17.54,5.61 18.92,8H12C10.06,8 8.45,9.38 8.08,11.21L5.7,7.08C7.16,5.21 9.44,4 12,4M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z", "Chrome Web Store's signature.");
+    }
+
+    function makeSignatureSummaryBlock(signature) {
+      let d = document.createElement("div");
+      d.className = "signature";
+      let icons = document.createElement("div");
+      icons.className = "icons";
+      if (signature.passed) {
+        icons.appendChild(makeIconSigPassed());
+        d.className += " passed";
+      } else {
+        icons.appendChild(makeIconSigFailed());
+        d.className += " failed";
+      }
+      if (signature.developer) icons.appendChild(makeIconDeveloper());
+      if (signature.google) icons.appendChild(makeIconGoogle());
+      if (signature.googletest) icons.appendChild(makeIconGoogleTest());
+      if (signature.webstore) icons.appendChild(makeIconWebstore());
+      d.appendChild(icons);
+      let details = document.createElement("div");
+      let props = {"Algorithm": signature.alg, "Public Key": binToB64(signature.key), "Signature": binToB64(signature.sig)};
+      if (signature.note) props["Notes"] = signature.note;
+      makeDivList(props, details);
+      d.appendChild(details);
+      return d;
+    }
+
+    function makeSignatureSummary(signatures) {
+      let d = document.createElement("div");
+      for (let signature of signatures) d.appendChild(makeSignatureSummaryBlock(signature));
+      return d;
+    }
+
+    function makeDivList(props, parent) {
+      for (let p in props) {
+        let d = document.createElement("div");
+        d.className = "keyValuePair"
+        let t = document.createElement("span");
+        t.appendChild(document.createTextNode(p));
+        d.appendChild(t);
+        if (props[p].length > 80) {
+          let v = document.createElement("input");
+          v.value = props[p];
+          v.readonly = "readonly";
+          d.appendChild(v);
+          let cp = document.createElement("button");
+          cp.addEventListener("click", () => { v.select(); document.execCommand("copy"); });
+          cp.innerHTML = `<svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" /></svg>`;
+          d.appendChild(cp);
+        } else {
+          let v = document.createElement("span");
+          v.appendChild(document.createTextNode(props[p]));
+          d.appendChild(v);
+        }
+        parent.appendChild(d);
+      }
+    }
+
+    function makeCrx3Output(filename, isDiff, crxId, signatures, verifiedContents) {
+      let d = document.createElement("div");
+      let h1 = document.createElement("h1");
+      h1.appendChild(document.createTextNode(filename));
+      d.appendChild(h1);
+      makeDivList({"Type": isDiff ? "CRX 3 (Differential)" : "CRX 3", "CRX ID": crxId, "Verified Contents Blob": binToB64(verifiedContents)}, d);
+      d.appendChild(makeSignatureSummary(signatures));
+      document.getElementById("output").appendChild(d);
+    }
+
+    function makeCrx2Output(filename, isDiff, crxId, signature) {
+      let d = document.createElement("div");
+      let h1 = document.createElement("h1");
+      h1.appendChild(document.createTextNode(filename));
+      d.appendChild(h1);
+      makeDivList({"Type": isDiff ? "CRX 2 (Differential)" : "CRX 2", "CRX ID": crxId}, d);
+      d.appendChild(makeSignatureSummary([signature]));
+      document.getElementById("output").appendChild(d);
+    }
+
+    function makeNotACrxOutput(filename) {
+      let d = document.createElement("div");
+      let h1 = document.createElement("h1");
+      h1.appendChild(document.createTextNode(filename));
+      d.appendChild(h1);
+      makeDivList({"Type": "Unknown (Not CRX)"}, d);
+      document.getElementById("output").appendChild(d);
+    }
+
+    function makeUnknownCrxOutput(filename, version, isDiff) {
+      let d = document.createElement("div");
+      let h1 = document.createElement("h1");
+      h1.appendChild(document.createTextNode(filename));
+      d.appendChild(h1);
+      makeDivList({"Type": "CRX " + version + (isDiff ? " (Differential)" : "")}, d);
+      document.getElementById("output").appendChild(d);
+    }
+  </script>
+  <style>
+    body {
+      font-family: sans-serif;
+      font-size: 120%;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      margin: 0;
+      min-height: 100vh;
+    }
+    label {
+      background: #038;
+      color: #fff;
+    }
+    input {
+      font-size: 100%;
+    }
+    h1 {
+      font-size: 130%;
+      color: #fff;
+      background-color: #05a;
+      margin: 0;
+      padding-left: 1em;
+    }
+    #output {
+      flex-grow: 1;
+    }
+    #output > div {
+      margin: 1em;
+      border: 2px solid #05a;
+    }
+    #footer {
+      font-size: 80%;
+      text-align: right;
+      color: #aaa;
+    }
+    #footer > a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .keyValuePair {
+      display: flex;
+      align-items: center;
+    }
+    .keyValuePair > span:first-child {
+      width: 30%;
+    }
+    .signature {
+      display: flex;
+      margin: 2px;
+    }
+    .signature > :nth-child(2) {
+      flex-grow: 1;
+    }
+    .passed {
+      border: 2px solid green;
+    }
+    .passed > :first-child {
+      background-color: green;
+      padding-right: 2px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+    .failed {
+      border: 2px solid red;
+    }
+    .failed > :first-child {
+      background-color: red;
+      padding-right: 2px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+    }
+    #explain {
+      margin-top: 2em;
+      font-size: 80%;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <label><input type="file" id="file" multiple onchange="check()"></input></label>
+  <div id="output"></div>
+  <div id="explain">
+    <hr/>
+    <p>This tool runs locally in your browser. The selected files are not uploaded to any server.</p>
+    <table>
+      <tr><th colspan="2">Legend</th></tr>
+      <tr><td id="legendSigPass"></td><td>This signature verified correctly.</td></tr>
+      <tr><td id="legendSigFail"></td><td>This signature failed to verify.</td></tr>
+      <tr><td id="legendGoogleSignature"></td><td>A signature applied to an extension by Google. One such signature is required to install from Chrome Web Store.</td></tr>
+      <tr><td id="legendGoogleTestSignature"></td><td>Similar to the Google Signature, but less trusted. Chrome will only accept it in place of the Google Signature if certain command-line options are set.</td></tr>
+      <tr><td id="legendDeveloperSignature"></td><td>A signature applied by the developer of an extension, or in some cases by Google on their behalf. One such signature is required to install the extension in any context.</td></tr>
+      <tr><td id="legendChromeWebStoreSignature"></td><td>A signature sometimes applied by Chrome Web Store. Does not seem to be enforced.</td></tr>
+    </table>
+    <table>
+      <tr><th colspan="2">Supported Formats</th></tr>
+      <tr><td>CRX 3</td><td><a href="https://docs.google.com/document/d/1pAVB4y5EBhqufLshWMcvbQ5velk0yMGl5ynqiorTCG4/edit#heading=h.ke61kmpkapku">CRX3</a> is a signed ZIP format. It can carry multiple signatures and unsigned data.</td></tr>
+      <tr><td>CRX 2</td><td>CRX2 is an older version of CRX3 that was deprecated in Chrome 76. Support was completely removed in Chrome 78.</td></tr>
+      <tr><td>CRX 3 (Differential)</td><td>Some CRX3 files are marked as "differential" CRX3s, which indicates they represent a delta between one directory and another.</td></tr>
+      <tr><td>CRX 2 (Differential)</td><td>Some CRX2 files are markes as "differential" CRX2s, in the same way.</td></tr>
+    </table>
+  </div>
+  <div id="footer">
+    Updated 2021-05-19<br><a href="https://crx-checker.appspot.com/">https://crx-checker.appspot.com/</a>
+  </div>
+  <script>
+    document.getElementById("legendSigPass").appendChild(makeIconSigPassed());
+    document.getElementById("legendSigFail").appendChild(makeIconSigFailed());
+    document.getElementById("legendGoogleSignature").appendChild(makeIconGoogle());
+    document.getElementById("legendGoogleTestSignature").appendChild(makeIconGoogleTest());
+    document.getElementById("legendDeveloperSignature").appendChild(makeIconDeveloper());
+    document.getElementById("legendChromeWebStoreSignature").appendChild(makeIconWebstore());
+  </script>
+</body>
+</html>
