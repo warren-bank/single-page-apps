@@ -1,0 +1,220 @@
+html {
+  font-size: 10px;
+}
+body {
+  margin: 2rem;
+  font-family: Mark Pro Book,Helvetica,Arial,sans-serif;
+  font-size: 1.6rem;
+}
+body > header {
+}
+body > header > a {
+  text-decoration: none;
+}
+body > header > a > h1 {
+  display: inline-block;
+  color: #ed2324;
+  font-size: 2rem;
+  margin: 0;
+}
+
+.tester-container > h2 {
+  font-size: 6.4rem;
+  margin: 0.5em 0;
+  text-align: center;
+}
+.tester-container label {
+  display: block;
+  padding-left: 3rem;
+  padding-bottom: 1.6rem;
+}
+.tester-container .input-container {
+  box-shadow: 6px 5px 20px rgba(0,0,0,.1);
+  padding: 1.8rem 3rem;
+}
+.tester-container .input-container > input,
+.tester-container .input-container > textarea {
+  border: none;
+  border-bottom: 2px solid #ed2324;
+  color: #303030;
+  font-family: Roboto Mono,monospace;
+  font-size: 1.6rem;
+  line-height: 1.4rem;
+  padding-bottom: 0.6rem;
+  width: 100%;
+}
+.tester-container .input-container > textarea {
+  min-height: 12.4rem;
+  resize: vertical;
+}
+.tester-container .input-container > input:focus,
+.tester-container .input-container > textarea:focus {
+  outline: none;
+}
+
+.tester-container > .form-container label {
+}
+.tester-container > .form-container > .input-container,
+.tester-container > .form-container > #advanced-fields,
+.tester-container > .form-container > #buttons {
+  margin-bottom: 3.6rem;
+}
+.tester-container > .form-container > #advanced-fields > .variable-list,
+.tester-container > .form-container > #advanced-fields > .variable-list > div {
+  position: relative;
+  z-index: 1;
+}
+.tester-container > .form-container > #advanced-fields > .variable-list > div > * {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 50%;
+}
+.tester-container > .form-container > #advanced-fields > .variable-list > div > *:last-child {
+  width: calc(50% - 10px);
+}
+.tester-container > .form-container > #advanced-fields > .variable-list > a.add-variable,
+.tester-container > .form-container > #advanced-fields > .variable-list > div > a.remove-variable {
+  display: block;
+  position: absolute;
+  top: 0.5rem;
+  right: 1rem;
+  cursor: pointer;
+  width: 1.6rem;
+  height: 1.6rem;
+  font-size: 1.3rem;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 1.6rem;
+  color: #fff;
+}
+.tester-container > .form-container > #advanced-fields > .variable-list > a.add-variable {
+  background-color: #11b20e;
+}
+.tester-container > .form-container > #advanced-fields > .variable-list > div > a.remove-variable {
+  background-color: #ed2324;
+}
+.tester-container > .form-container.basic > #advanced-fields {
+  display: none;
+}
+
+.tester-container > .form-container > #buttons {
+  text-align: center;
+}
+.tester-container > .form-container > #buttons > a.advanced-fields-toggle,
+.tester-container > .form-container > #buttons > button {
+  display: inline-block;
+  color: #ed2324;
+  font-weight: bold;
+}
+.tester-container > .form-container > #buttons > a.advanced-fields-toggle {
+  padding: 1.5rem 0;
+  margin-right: 4.8rem;
+}
+.tester-container > .form-container > #buttons > a.advanced-fields-toggle:hover {
+  cursor: pointer;
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+.tester-container > .form-container > #buttons > a.advanced-fields-toggle > .icon {
+  display: inline-block;
+  margin-left: 1.6rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-style: solid;
+  border-width: .3rem .3rem 0 0;
+  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+.tester-container > .form-container.basic > #buttons > a.advanced-fields-toggle > .icon {
+  -webkit-transform: rotate(135deg);
+  transform: rotate(135deg);
+}
+.tester-container > .form-container > #buttons > button {
+  padding: 1.4rem 5.5rem;
+  font-size: 1.8rem;
+  background-color: #fff;
+  border: none;
+  box-shadow: inset 0 0 0 3px;
+}
+.tester-container > .form-container > #buttons > button:hover {
+  box-shadow: inset 0 0 0 5px;
+  cursor: pointer;
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+
+.tester-container > .results-container {
+  margin-top: 3.6rem;
+}
+.tester-container > .results-container label,
+.tester-container > .results-container > .results > h3 {
+  font-size: 3.6rem;
+  margin-bottom: 0;
+}
+.tester-container > .results-container > .results {
+  margin: 0 3rem;
+}
+.tester-container > .results-container > .results .rule-result {
+  padding: 1.8rem 0;
+  border-bottom: .1rem solid #a6afbf;
+}
+.tester-container > .results-container > .results .rule-result:last-child {
+  padding-bottom: 0;
+  border-bottom-style: none;
+}
+.tester-container > .results-container > .results .rule-result > .rule-result {
+  margin-left: 5.6rem;
+}
+.tester-container > .results-container > .results .rule-result > .line-number {
+  display: block;
+  float: left;
+  width: 3.2rem;
+  height: 3.2rem;
+  margin-right: 2.4rem;
+  font-size: 1.3rem;
+  border-radius: 50%;
+  color: #fff;
+  text-align: center;
+  line-height: 3.2rem;
+}
+.tester-container > .results-container > .results .rule-result > .line {
+  margin-left: 5.6rem;
+  line-height: 2.4rem;
+  word-break: break-all;
+}
+.tester-container > .results-container > .results .rule-result > .line + .line {
+  margin-top: 1.2rem;
+}
+.tester-container > .results-container > .results .rule-result.was-met > .line-number {
+  background-color: #11b20e;
+}
+.tester-container > .results-container > .results .rule-result.was-met > .value {
+  color: #11b20e;
+}
+.tester-container > .results-container > .results .rule-result.was-not-met > .line-number {
+  background-color: #ed2324;
+}
+.tester-container > .results-container > .results .rule-result.was-not-met > .value {
+  color: #ed2324;
+}
+.tester-container > .results-container > .results .rule-result.was-invalid > .line-number {
+  background-color: #ffa800;
+}
+.tester-container > .results-container > .results .rule-result.was-invalid > .value {
+  color: #ffa800;
+}
+.tester-container > .results-container > .results .rule-result.was-not-processed > .line-number {
+  background-color: #a6afbf;
+}
+.tester-container > .results-container > .results .rule-result.was-not-processed > .value {
+  color: #a6afbf;
+}
+.tester-container > .results-container > .results .rule-result > .message code {
+  display: inline;
+  font-weight: bold;
+  font-style: italic;
+}
+.tester-container > .results-container > .results .rule-result > .message code,
+.tester-container > .results-container > .input-container > input:disabled {
+  background-color: rgba(246,248,250,0.5);
+}

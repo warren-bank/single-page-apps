@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Apache .htaccess Tester</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <script src="https://unpkg.com/@warren-bank/htaccess-tester@latest/browser-build/dist/es5/htaccess-tester.js"></script>
+    <script src="./js/htaccess-dom.js"></script>
+    <script src="./js/event_handlers.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="https://warren-bank.github.io/js-htaccess-tester/index.html">
+        <h1>Apache .htaccess Tester</h1>
+      </a>
+    </header>
+    <section class="tester-container">
+      <h2>Test your .htaccess<br>rewrite rules</h2>
+      <div class="form-container basic">
+        <label for="url">Fill in the url that you're applying the rules to.</label>
+        <div class="input-container">
+          <input aria-label="Request url" type="url" id="url" placeholder="https://warren-bank.github.io/js-htaccess-tester/index.html" autocomplete="off" autocapitalize="off" spellcheck="false" />
+        </div>
+        <label for="htaccess">Paste your .htaccess rules into the form</label>
+        <div class="input-container">
+          <textarea wrap="off" aria-label="Htaccess file" id="htaccess" rows="14" placeholder="Your .htaccess file" autocomplete="off" autocapitalize="off" spellcheck="false">RewriteEngine on</textarea>
+        </div>
+        <div id="advanced-fields">
+          <div class="variable-list" id="server-variables">
+            <a class="add-variable">+</a>
+            <h3>Server Variables</h3>
+            <div>
+              <label>Option name</label>
+              <label>Value</label>
+            </div>
+            <template>
+              <div>
+                <a class="remove-variable">x</a>
+                <div class="input-container">
+                  <input aria-label="Server Variable key" type="text" class="variable-name" placeholder="e.g. HTTP_REFERER" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                </div>
+                <div class="input-container">
+                  <input aria-label="Server Variable value" type="text" class="variable-value" placeholder="e.g. https://example.com" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                </div>
+              </div>
+            </template>
+          </div>
+          <div class="variable-list" id="environment-variables">
+            <a class="add-variable">+</a>
+            <h3>Environment Variables</h3>
+            <div>
+              <label>Option name</label>
+              <label>Value</label>
+            </div>
+            <template>
+              <div>
+                <a class="remove-variable">x</a>
+                <div class="input-container">
+                  <input aria-label="Environment Variable key" type="text" class="variable-name" placeholder="e.g. BASIC_AUTHORIZATION" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                </div>
+                <div class="input-container">
+                  <input aria-label="Environment Variable value" type="text" class="variable-value" placeholder="e.g. YWxhZGRpbjpvcGVuc2VzYW1l" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                </div>
+              </div>
+            </template>
+          </div>
+          <div class="variable-list" id="ssl-environment-variables">
+            <a class="add-variable">+</a>
+            <h3>SSL Environment Variables</h3>
+            <div>
+              <label>Option name</label>
+              <label>Value</label>
+            </div>
+            <template>
+              <div>
+                <a class="remove-variable">x</a>
+                <div class="input-container">
+                  <input aria-label="SSL Environment Variable key" type="text" class="variable-name" placeholder="e.g. SSL_CIPHER_USEKEYSIZE" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                </div>
+                <div class="input-container">
+                  <input aria-label="SSL Environment Variable value" type="text" class="variable-value" placeholder="e.g. 128" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                </div>
+              </div>
+            </template>
+          </div>
+          <div class="variable-list" id="http-header-variables">
+            <a class="add-variable">+</a>
+            <h3>HTTP Header Variables</h3>
+            <div>
+              <label>Option name</label>
+              <label>Value</label>
+            </div>
+            <template>
+              <div>
+                <a class="remove-variable">x</a>
+                <div class="input-container">
+                  <input aria-label="HTTP Header Variable key" type="text" class="variable-name" placeholder="e.g. ACCEPT" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                </div>
+                <div class="input-container">
+                  <input aria-label="HTTP Header Variable value" type="text" class="variable-value" placeholder="e.g. text/plain" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+        <div id="buttons">
+          <a class="advanced-fields-toggle" aria-controls="advanced-fields">
+            Advanced <span class="icon"></span>
+          </a>
+          <button type="submit">Test</button>
+        </div>
+      </div>
+      <div class="results-templates">
+        <template id="tpl-results-container">
+          <label for="output-url">Output url</label>
+          <div class="input-container">
+            <input id="output-url" disabled="disabled" type="url" />
+          </div>
+          <div class="results">
+            <h3>Debugging info</h3>
+          </div>
+        </template>
+        <template id="tpl-rule-result">
+          <div class="rule-result">
+            <div class="line-number"></div>
+            <div class="line value"></div>
+            <div class="line message"></div>
+          </div>
+        </template>
+      </div>
+      <div class="results-container">
+      </div>
+    </section>
+  </body>
+</html>
