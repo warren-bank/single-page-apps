@@ -1,0 +1,10 @@
+body > app-root > app-top-bar > nav#nav > div > div > a {
+  pointer-events: none;
+  cursor: default;
+}
+body > app-root > app-bottom-bar > footer > div > span {
+  display: none;
+}
+body > app-root > app-bottom-bar > footer > div > span:first-child {
+  display: block;
+}
