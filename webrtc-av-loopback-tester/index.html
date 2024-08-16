@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>WebRTC Audio/Video Loopback Tester</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <script src="./js/app.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="https://warren-bank.github.io/webrtc-av-loopback-tester/index.html">
+        <h1>WebRTC Audio/Video Loopback Tester</h1>
+      </a>
+    </header>
+    <section class="tester-container">
+      <table>
+        <tr>
+          <td><label>Audio Device:</label></td>
+          <td><select id="audio_device_list"></select></td>
+        </tr>
+        <tr>
+          <td><label>Video Device:</label></td>
+          <td><select id="video_device_list"></select></td>
+        </tr>
+        <tr>
+          <td><label>Video Dimensions:</label></td>
+          <td>
+            <select id="video_dimensions">
+              <option value="0x0" selected>[default]</option>
+              <option value="160x120">160x120 4:3 QQVGA</option>
+              <option value="176x144">176x144 4:3 QCIF</option>
+              <option value="320x240">320x240 4:3 QVGA</option>
+              <option value="352x288">352x288 4:3 CIF</option>
+              <option value="640x360">640x360 16:9 360p(nHD)</option>
+              <option value="640x480">640x480 4:3 VGA</option>
+              <option value="800x600">800x600 4:3 SVGA</option>
+              <option value="1280x720">1280x720 16:9 720p(HD)</option>
+              <option value="1600x1200">1600x1200 4:3 UXGA</option>
+              <option value="1920x1080">1920x1080 16:9 1080p(FHD)</option>
+              <option value="3840x2160">3840x2160 16:9 4K(UHD)</option>
+            </select>
+            <div>
+              <button id="video_dimensions_min">Minimum</button>
+              <button id="video_dimensions_max">Maximum</button>
+              <button id="video_dimensions_ideal">Ideal</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td><label>Minimum Video Width:</label></td>
+          <td><input type="number" id="video_width_min" /></td>
+        </tr>
+        <tr>
+          <td><label>Maximum Video Width:</label></td>
+          <td><input type="number" id="video_width_max" /></td>
+        </tr>
+        <tr>
+          <td><label>Ideal Video Width:</label></td>
+          <td><input type="number" id="video_width_ideal" /></td>
+        </tr>
+        <tr>
+          <td><label>Minimum Video Height:</label></td>
+          <td><input type="number" id="video_height_min" /></td>
+        </tr>
+        <tr>
+          <td><label>Maximum Video Height:</label></td>
+          <td><input type="number" id="video_height_max" /></td>
+        </tr>
+        <tr>
+          <td><label>Ideal Video Height:</label></td>
+          <td><input type="number" id="video_height_ideal" /></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td><button id="apply">Apply</button></td>
+        </tr>
+      </table>
+      <div>
+        <video></video>
+      </div>
+    </section>
+  </body>
+</html>
