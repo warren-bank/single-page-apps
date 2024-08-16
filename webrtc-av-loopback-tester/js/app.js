@@ -188,7 +188,30 @@ const init = () => {
             videoList.appendChild(option)
         }
       })
+
+      update_device_list_selections()
     })
+  }
+
+  const update_device_list_selections = () => {
+    audio_deviceId = update_device_list_selection(audioList, audio_deviceId)
+    video_deviceId = update_device_list_selection(videoList, video_deviceId)
+  }
+
+  const update_device_list_selection = (list, old_value) => {
+    let option
+
+    if (old_value)
+      option = list.querySelector(`:scope > option[value="${old_value}"]`)
+
+    if (!option)
+      option = list.options.length ? list.options[0] : null
+
+    if (option) {
+      option.selected = true
+
+      return option.value
+    }
   }
 
   initialize_dom()
