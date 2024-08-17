@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Incognito/Private Browser Window Detector</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <!--
+      notes:
+        * the upstream library is locally mirrored and renamed
+        * uBlock Origin includes default filters that prevent loading the upstream library from its CDN
+            https://github.com/search?q=repo%3AuBlockOrigin%2FuAssets%20detectincognito&type=code
+            https://github.com/uBlockOrigin/uAssets/blob/72f5947c8a1d2355d9e585feb4c2b072c803ce3d/filters/filters-2023.txt#L883
+            https://github.com/uBlockOrigin/uAssets/blob/72f5947c8a1d2355d9e585feb4c2b072c803ce3d/thirdparties/easylist/easylist-annoyances.txt#L24
+    -->
+    <script src="./js/lib.js" x-upstream-src="//cdn.jsdelivr.net/gh/Joe12387/detectIncognito@main/dist/es5/detectIncognito.min.js"></script>
+    <script src="./js/app.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="https://warren-bank.github.io/incognito-private-browser-window-detector/index.html">
+        <h1>Incognito/Private Browser Window Detector</h1>
+      </a>
+    </header>
+    <section class="tester-container">
+    </section>
+  </body>
+</html>

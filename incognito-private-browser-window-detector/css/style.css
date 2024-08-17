@@ -1,0 +1,28 @@
+html, body,
+body > header,
+body > section.tester-container {
+  margin: 0;
+  padding: 0;
+}
+html, body {
+  background-color: white;
+  font-family: sans-serif;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+body > header,
+body > section.tester-container {
+  display: block;
+  padding: 1rem;
+  text-align: center;
+}
+
+body > header > a {
+  text-decoration: none;
+}
+body > header > a > h1 {
+  display: inline-block;
+  color: #ed2324;
+  font-size: 2rem;
+  margin: 0;
+}
