@@ -1,0 +1,77 @@
+html {
+  font-size: 10px;
+}
+body {
+  margin: 2rem;
+  font-family: Mark Pro Book,Helvetica,Arial,sans-serif;
+  font-size: 1.6rem;
+}
+body > header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+body > header > a,
+body > header > a > h1 {
+  display: inline-block;
+}
+body > header > a {
+  text-decoration: none;
+}
+body > header > a > h1 {
+  color: #ed2324;
+  font-size: 2rem;
+  margin: 0;
+}
+
+.reader-container label {
+  display: block;
+  font-size: 2rem;
+  padding-bottom: 1.6rem;
+}
+
+.reader-container > .form-container > .input-container,
+.reader-container > .form-container > #buttons {
+  margin-bottom: 2rem;
+}
+.reader-container > .form-container > .input-container {
+  box-shadow: 6px 5px 20px rgba(0,0,0,.1);
+  padding: 1.8rem 3rem;
+}
+.reader-container > .form-container > .input-container input[type="text"] {
+  width: 100%;
+}
+.reader-container > .form-container > .input-container > .info {
+  margin-top: 2rem;
+  font-size: 0.85em;
+}
+.reader-container > .form-container > .input-container > .info a {
+  text-decoration: none;
+}
+.reader-container > .form-container > #buttons {
+  text-align: center;
+}
+.reader-container > .form-container > #buttons > button {
+  display: inline-block;
+  color: #ed2324;
+  font-weight: bold;
+  padding: 1.4rem 5.5rem;
+  font-size: 1.8rem;
+  background-color: #fff;
+  border: none;
+  outline: none;
+  box-shadow: inset 0 0 0 3px;
+}
+.reader-container > .form-container > #buttons > button:hover {
+  box-shadow: inset 0 0 0 5px;
+  cursor: pointer;
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+
+.reader-container > .results-container {
+  margin: 0 3rem;
+}
+.reader-container > .results-container > .results > h3 {
+  font-size: 2rem;
+  margin-bottom: 0;
+}

@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const input_file_element = document.getElementById('qr_code_image_file')
-  const submit_button      = document.querySelector('#buttons > button[type="submit"]')
-  const results_template   = document.getElementById('tpl-results-container')
-  const output_container   = document.querySelector('div.results-container')
+  const input_key_uri    = document.getElementById('key_uri')
+  const submit_button    = document.querySelector('#buttons > button[type="submit"]')
+  const results_template = document.getElementById('tpl-results-container')
+  const output_container = document.querySelector('div.results-container')
 
   const cancel_event = (event) => {
     event.stopPropagation()
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
       container.removeChild(container.childNodes[0])
   }
 
-  const on_submit = async (event) => {
+  const on_submit = (event) => {
     cancel_event(event)
     empty_container(output_container)
 
@@ -25,12 +25,11 @@ document.addEventListener('DOMContentLoaded', () => {
       results_template.content.cloneNode(true)
     )
 
-    const output_img_element = output_container.querySelector(':scope img')
     const output_pre_element = output_container.querySelector(':scope pre')
     let txt
 
     try {
-      txt = await window.read_qr_code(input_file_element, output_img_element)
+      txt = window.otp_token_generator(input_key_uri.value)
     }
     catch(e) {
       txt = e.message
