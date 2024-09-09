@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>QR Code reader</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <script src="https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js"></script>
+    <script src="./js/qr-code-reader.js"></script>
+    <script src="./js/event_handlers.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="https://warren-bank.github.io/qr-code-reader/index.html">
+        <h1>QR Code reader</h1>
+      </a>
+    </header>
+    <section class="reader-container">
+      <div class="form-container">
+        <div class="input-container">
+          <label for="qr_code_image_file">QR Code Image File:</label>
+          <input aria-label="QR Code Image File" type="file" accept="image/*" id="qr_code_image_file" />
+        </div>
+        <div id="buttons">
+          <button type="submit">Read</button>
+        </div>
+      </div>
+      <div class="results-templates">
+        <template id="tpl-results-container">
+          <div class="output-container">
+            <label for="qr_code_image">QR Code Image:</label>
+            <img aria-label="QR Code Image" />
+          </div>
+          <div class="results">
+            <h3>QR Code Data:</h3>
+            <pre></pre>
+          </div>
+        </template>
+      </div>
+      <div class="results-container">
+      </div>
+    </section>
+  </body>
+</html>
