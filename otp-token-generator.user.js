@@ -31,6 +31,10 @@ var user_options = {
     {
       "name":  "Cogswell Cogs",
       "value": "otpauth://totp/COGSWELL:Cogs?issuer=COGSWELL&secret=NB2W45DFOIZA&algorithm=SHA1&digits=6&period=30"
+    },
+    {
+      "name":  "Hash-based One Time Password (HOTP) example",
+      "value": "otpauth://hotp/alice@google.com?secret=base32secret&counter=0"
     }
   ]
 }
