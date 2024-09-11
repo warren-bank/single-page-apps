@@ -30,15 +30,27 @@
           <button type="submit">Generate Token</button>
         </div>
       </div>
-      <div class="results-templates">
-        <template id="tpl-results-container">
-          <div class="results">
+      <div class="results-container">
+      </div>
+      <div class="templates">
+        <template id="tpl-error">
+          <div class="error">
+            <h3>Error:</h3>
+            <pre></pre>
+          </div>
+        </template>
+        <template id="tpl-token">
+          <div class="token">
             <h3>Token:</h3>
             <pre></pre>
           </div>
         </template>
-      </div>
-      <div class="results-container">
+        <template id="tpl-totp">
+          <div class="totp">
+            <div>Will remain valid for the next <span class="totp-secs"></span> seconds</div>
+            <progress max="" value=""></progress>
+          </div>
+        </template>
       </div>
     </section>
   </body>

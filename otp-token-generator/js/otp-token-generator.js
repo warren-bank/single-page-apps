@@ -1,15 +1,23 @@
 (function(){
 
-  const otp_token_generator = (key_uri) => {
+  const get_OTP = (key_uri) => {
     if (!OTPAuth || !OTPAuth.URI)
       throw new Error('OTPAuth library is required')
 
-    const totp = OTPAuth.URI.parse(key_uri)
-    const token = totp.generate()
-
-    return token
+    const otp = OTPAuth.URI.parse(key_uri)
+    return otp
   }
 
-  window.otp_token_generator = otp_token_generator
+  const get_OTP_token = (otp) => {
+    return otp.generate()
+  }
+
+  const is_TOTP = (otp) => {
+    return (otp instanceof OTPAuth.TOTP)
+  }
+
+  window.get_OTP = get_OTP
+  window.get_OTP_token = get_OTP_token
+  window.is_TOTP = is_TOTP
 
 })()

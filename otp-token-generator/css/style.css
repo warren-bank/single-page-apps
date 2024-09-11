@@ -71,7 +71,11 @@ body > header > a > h1 {
 .reader-container > .results-container {
   margin: 0 3rem;
 }
-.reader-container > .results-container > .results > h3 {
+.reader-container > .results-container > .error > h3,
+.reader-container > .results-container > .token > h3 {
   font-size: 2rem;
   margin-bottom: 0;
+}
+.reader-container > .results-container > .token > pre {
+  cursor: copy;
 }
