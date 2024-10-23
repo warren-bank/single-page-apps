@@ -1,0 +1,202 @@
+body {
+  width: 100%;
+  height: 100vh;
+  background-color: #fff;
+  color: #000;
+  font-family:"Source Sans Pro", sans-serif; /* 200 = ExtraLight, 300 = Light, 400 = regular, 600 = semi-bold, 700 = bold, 900 = black */
+  font-weight:400;
+}
+
+a.animate-link {
+  text-decoration: none;
+  box-shadow: inset 0 0 0 0 #3777d6;
+  color: #3777d6;
+  margin: 0 -.25rem;
+  padding: 0 .25rem;
+  transition: color .3s ease-in-out, box-shadow .3s ease-in-out;
+}
+
+a.animate-link:hover {
+  box-shadow: inset 200px 0 0 0 #3777d6;
+  color: white;
+  border-radius: 10px;
+}
+
+hr {
+  margin: 40px 0px 40px 0;
+  color: black;
+}
+
+.blink-me {
+  animation: blinker 5s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    transform: scale(1.05);
+
+  }
+}
+
+span.python-prompt {
+  font-size: 20px;
+}
+
+span.python-prompt.large {
+  font-size: 32px;
+}
+
+span.python-prompt::after {
+  font-family: monospace;
+  content: ">>>";
+}
+
+header {
+  padding: 0;
+}
+
+/* svg here is the grid pattern */
+header .panel {
+  margin: 50px;
+  display: flex;
+  flex-direction: column;
+  background-color: #3777d6;
+  border-radius: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.19'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+header .logo {
+  width: 100px;
+  height: auto;
+  margin: 50px auto 0;
+}
+
+header h1 {
+  font-size: 60px;
+  text-align: center;
+  margin: 20px auto;
+  color: #fff;
+  font-weight:400;
+}
+
+header h2 {
+  font-size: 22px;
+  line-height: 28px;
+  text-align: center;
+  margin: 20px auto 50px;
+  color: #fff;
+  font-weight:300;
+}
+
+main {
+  margin: 0 50px;
+}
+
+
+article {
+  margin: 0px 0 30px;
+}
+
+code.pypi {
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  border-radius: 3px;
+}
+
+.console-examples h2 {
+  text-align: left;
+  color: #000;
+  width: 100%;
+  font-size: 20px;
+  line-height: auto;
+  margin: 10px 0 0;
+}
+
+/* Jquery terminal CSS */
+.terminal {
+  --size: 1.3; /*font size*/
+  --color: rgba(255, 255, 255, 0.8);
+}
+
+.noblink {
+  --animation: terminal-none;
+}
+
+div.console-examples {
+  padding: 0 0px 50px;
+}
+
+.loading {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  top: calc(50% - 25px);
+  left: calc(50% - 25px);
+  position: relative;
+  border: 3px solid rgba(172, 237, 255, 0.5);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  -webkit-animation: spin 1s ease-in-out infinite;
+}
+
+#pythonScript {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  height: calc(inherit - 40px);
+  background-color: lightgray;
+  padding: 0 0 0 20px ;
+  font-size: 16px;
+  margin: 0px 0 20px;
+}
+
+#pythonScript pre {
+  white-space: pre-wrap;       /* css-3 */
+  white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+  white-space: -pre-wrap;      /* Opera 4-6 */
+  white-space: -o-pre-wrap;    /* Opera 7 */
+  word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+#terminal {
+  position: fixed;
+  right: 0;
+  top: 0vh;
+  width: 40%;
+  height: 100vh;
+  border: 1px white solid;
+  background-color: #000;
+}
+
+button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border:0;
+    text-transform:uppercase;
+    border-radius:5px;
+    font-size:16px;
+    font-weight:500;
+    width: 80px;
+    height:40px;
+    line-height:40px;
+    padding: 0 15px;
+    color:#fff;
+    cursor:pointer;
+    background-color: #05c050;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@-webkit-keyframes spin {
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}
