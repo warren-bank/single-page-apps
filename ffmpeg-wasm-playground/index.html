@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FFmpeg.wasm Playground</title>
+    <link href="./dist/output.css" rel="stylesheet" />
+    <script src="./vendor/ffmpeg/ffmpeg.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+    <link rel="shortcut icon" type="image/jpg" href="favicon.ico" />
+  </head>
+
+  <body>
+    <main class="container mx-auto p-8">
+      <h1 class="text-center py-4">
+        <span class="border-b-black border-b-4 pb-1">
+          <span class="font-bold text-4xl italic">FFmpeg.wasm Playground</span>
+        </span>
+      </h1>
+      <div class="lg:w-2/3 mx-auto">
+        <div>
+          <div class="my-6">
+            <label
+              class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              for="uploader"
+              >1. Select input file
+            </label>
+            <input
+              id="uploader"
+              accept="video/*"
+              type="file"
+              class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-slate-700 file:text-white hover:file:bg-slate-600 cursor-pointer file:cursor-pointer focus:file:border-0 focus:ring-0 focus:file:ring-0"
+            />
+          </div>
+          <div class="my-6">
+            <label
+              class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
+              for="command"
+              >2. FFmpeg command</label
+            >
+            <input
+              id="command"
+              type="text"
+              placeholder="ffmpeg -i input.mp4 -ss 00:00:03 -vframes 1 -q:v 2 output.jpg"
+              class="mt-0 block w-full px-0.5 border-0 border-b-2 border-gray-200 focus:ring-0 focus:border-black placeholder:italic"
+            />
+          </div>
+          <button
+            id="execute"
+            class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-4 rounded text-sm"
+          >
+            Run
+          </button>
+        </div>
+      </div>
+      <div id="output-container" class="lg:w-2/3 mx-auto">
+        <p id="status-msg" class="mt-6 text-center italic hidden">
+          Running your command ...
+        </p>
+        <progress
+          class="block my-5 mx-auto rounded hidden"
+          width="500"
+          id="status-progress"
+          value="0"
+          max="1"
+        ></progress>
+        <pre
+          class="my-5 mx-auto rounded hidden"
+          style="max-height: 500px; overflow: auto;"
+          id="output-stdout"
+        ></pre>
+        <img
+          class="my-5 mx-auto rounded hidden"
+          height="500"
+          width="500"
+          id="output-image"
+        />
+        <video
+          class="my-5 mx-auto rounded hidden"
+          height="500"
+          width="500"
+          id="output-video"
+          controls
+          autoplay
+        ></video>
+        <audio
+          class="my-5 mx-auto rounded hidden"
+          width="500"
+          id="output-audio"
+          controls
+          autoplay
+        ></audio>
+      </div>
+    </main>
+    <!-- Kind of silly, but this hidden div is for classes that get added by JS-->
+    <div class="hidden text-red-600"></div>
+  </body>
+  <script type="module" src="./js/main.js"></script>
+</html>
