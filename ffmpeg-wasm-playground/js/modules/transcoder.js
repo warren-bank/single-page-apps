@@ -1,8 +1,7 @@
-async function executeCommand(file, commandArgs, onProgress, onLog) {
+async function executeCommand(input_files, commandArgs, onProgress, onLog) {
   const { FFmpeg } = FFmpegWASM;
   const { fetchFile } = FFmpegUtil;
   const ffmpeg = new FFmpeg();
-  const { name } = file;
 
   if (onProgress)
     ffmpeg.on('progress', onProgress)
@@ -11,7 +10,9 @@ async function executeCommand(file, commandArgs, onProgress, onLog) {
     ffmpeg.on('log', onLog)
 
   await ffmpeg.load();
-  await ffmpeg.writeFile(name, await fetchFile(file));
+  for (let file of input_files) {
+    await ffmpeg.writeFile(file.name, await fetchFile(file));
+  }
   await ffmpeg.exec(commandArgs);
   return await ffmpeg.readFile(commandArgs[commandArgs.length - 1]);
 }

@@ -30,7 +30,7 @@ async function handleExecuteEvent() {
       }
     }
 
-    data = await executeCommand(elements.uploader.files[0], commandArgs, onProgress, onLog);
+    data = await executeCommand(elements.input_files.files, commandArgs, onProgress, onLog);
 
     if (isVideoFile(commandArgs[commandArgs.length - 1])) {
       elements.video.classList.remove("hidden");
@@ -55,7 +55,7 @@ async function handleExecuteEvent() {
 }
 
 const getElements = () => {
-  const uploader = document.getElementById("uploader");
+  const input_files = document.getElementById("input_files");
   const command = document.getElementById("command");
 
   const output = document.getElementById("output-container");
@@ -67,7 +67,7 @@ const getElements = () => {
   const audio = document.getElementById("output-audio");
 
   return {
-    uploader,
+    input_files,
     command,
 
     output,

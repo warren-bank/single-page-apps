@@ -23,13 +23,14 @@
           <div class="my-6">
             <label
               class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-              for="uploader"
-              >1. Select input file
+              for="input_files"
+              >1. Select input files
             </label>
             <input
-              id="uploader"
-              accept="video/*"
+              id="input_files"
               type="file"
+              multiple
+              accept="video/*, audio/*"
               class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-bold file:bg-slate-700 file:text-white hover:file:bg-slate-600 cursor-pointer file:cursor-pointer focus:file:border-0 focus:ring-0 focus:file:ring-0"
             />
           </div>
