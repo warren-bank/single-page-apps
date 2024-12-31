@@ -1,0 +1,417 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>yt-dlp web console</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+    <link
+      href="css/normalize-5.0.0.min.css"
+      x-href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="shortcut icon" src="img/favicon.ico" />
+
+    <script
+      src="js/jquery-3.7.1.min.js"
+      x-src="https://cdn.jsdelivr.net/npm/jquery"
+    ></script>
+    <script
+      src="js/jquery.terminal-2.35.2.min.js"
+      x-src="https://cdn.jsdelivr.net/npm/jquery.terminal@2.35.2/js/jquery.terminal.min.js"
+    ></script>
+    <script
+      src="js/unix_formatting-2.35.2.min.js"
+      x-src="https://cdn.jsdelivr.net/npm/jquery.terminal@2.35.2/js/unix_formatting.min.js"
+    ></script>
+    <link
+      href="css/jquery.terminal-2.35.2.min.css"
+      x-href="https://cdn.jsdelivr.net/npm/jquery.terminal@2.35.2/css/jquery.terminal.min.css"
+      rel="stylesheet"
+    />
+
+    <link
+      href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,200i,300,300i,400,400i,600,600i,700,700i,900,900i"
+      rel="stylesheet"
+    />
+
+    <style>
+      #yt-dlp-terminal {
+        background: #000;
+        min-width: 100%;
+        height: 600px;
+        z-index: 2000;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h3><span class="python-prompt" id="yt-dlp-terminal-title"></span> yt-dlp Terminal</h3>
+
+      <article id="yt-dlp-terminal">
+        <div class="loading"></div>
+      </article>
+
+      <hr />
+
+      <!-- note the indentation on the code blocks within <pre> is deliberate & important for correct layout ! -->
+      <div class="console-examples">
+        <h1><span class="python-prompt large"></span> Discover the yt-dlp online web console</h1>
+        <p>Please run the samples and/or type your own <strong>Python</strong> code to learn <strong>yt-dlp</strong>.</p>
+
+        <h2>Print the version of yt-dlp</h2>
+        <div id="pythonScript" class="a">
+          <pre>
+<code>yt_dlp.version.__version__</code>
+</pre>
+          <button onClick="parseScript('a')">RUN &gt;</button>
+        </div>
+
+        <h2><a target="_blank" href="https://github.com/yt-dlp/yt-dlp#extracting-information">Extracting information</a></h2>
+        <div id="pythonScript" class="b">
+          <pre>
+<code>URL = 'https://www.youtube.com/watch?v=qhKci8jY510'</code>
+
+<code>ydl_opts = {}</code>
+
+<code>with yt_dlp.YoutubeDL(ydl_opts) as ydl:</code>
+<code>    info = ydl.extract_info(URL, download=False)</code>
+<code>    print(json.dumps(ydl.sanitize_info(info)))</code>
+</pre>
+          <button onClick="parseScript('b')">RUN &gt;</button>
+        </div>
+
+        <h2><a target="_blank" href="https://github.com/yt-dlp/yt-dlp#filter-videos">Filter videos</a></h2>
+        <div id="pythonScript" class="c">
+          <pre>
+<code>URL = 'https://www.youtube.com/watch?v=qhKci8jY510'</code>
+
+<code>def longer_than_a_minute(info, *, incomplete):</code>
+<code>    """Download only videos longer than a minute (or with unknown duration)"""</code>
+<code>    duration = info.get('duration')</code>
+<code>    if duration and duration < 60:</code>
+<code>        return 'The video is too short'</code>
+
+<code>ydl_opts = {</code>
+<code>    'match_filter': longer_than_a_minute,</code>
+<code>}</code>
+
+<code>with yt_dlp.YoutubeDL(ydl_opts) as ydl:</code>
+<code>    info = ydl.extract_info(URL, download=False)</code>
+<code>    print(json.dumps(ydl.sanitize_info(info)))</code>
+</pre>
+          <button onClick="parseScript('c')">RUN &gt;</button>
+        </div>
+
+        <h2><a target="_blank" href="https://github.com/yt-dlp/yt-dlp#use-a-custom-format-selector">Use a custom format selector</a></h2>
+        <div id="pythonScript" class="d">
+          <pre>
+<code>URL = 'https://www.youtube.com/watch?v=qhKci8jY510'</code>
+
+<code>def format_selector(ctx):</code>
+<code>    """ Select the best video and the best audio that won't result in an mkv.</code>
+<code>    NOTE: This is just an example and does not handle all cases """</code>
+
+<code>    # formats are already sorted worst to best</code>
+<code>    formats = ctx.get('formats')[::-1]</code>
+
+<code>    # acodec='none' means there is no audio</code>
+<code>    best_video = next(f for f in formats</code>
+<code>                      if f['vcodec'] != 'none' and f['acodec'] == 'none')</code>
+
+<code>    # find compatible audio extension</code>
+<code>    audio_ext = {'mp4': 'm4a', 'webm': 'webm'}[best_video['ext']]</code>
+<code>    # vcodec='none' means there is no video</code>
+<code>    best_audio = next(f for f in formats if (</code>
+<code>        f['acodec'] != 'none' and f['vcodec'] == 'none' and f['ext'] == audio_ext))</code>
+
+<code>    # These are the minimum required fields for a merged format</code>
+<code>    yield {</code>
+<code>        'format_id': f'{best_video["format_id"]}+{best_audio["format_id"]}',</code>
+<code>        'ext': best_video['ext'],</code>
+<code>        'requested_formats': [best_video, best_audio],</code>
+<code>        # Must be + separated list of protocols</code>
+<code>        'protocol': f'{best_video["protocol"]}+{best_audio["protocol"]}'</code>
+<code>    }</code>
+
+<code>ydl_opts = {</code>
+<code>    'format': format_selector,</code>
+<code>}</code>
+
+<code>with yt_dlp.YoutubeDL(ydl_opts) as ydl:</code>
+<code>    info = ydl.extract_info(URL, download=False)</code>
+<code>    print(json.dumps(ydl.sanitize_info(info)))</code>
+</pre>
+          <button onClick="parseScript('d')">RUN &gt;</button>
+        </div>
+
+      </div><!-- end div.console -->
+
+      <hr />
+
+      <article>
+        <h3><span class="python-prompt"></span> Licensing</h3>
+        <strong>yt-dlp</strong> is available under the <a class="animate-link" href="https://github.com/yt-dlp/yt-dlp/blob/master/LICENSE">Unlicense license</a>.
+      </article>
+
+      <hr />
+    </main>
+
+    <script>
+      "use strict";
+
+      /**
+       *
+       */
+      function sleep(s) {
+        return new Promise((resolve) => setTimeout(resolve, s));
+      }
+
+      /**
+       *
+       */
+      async function main() {
+        let indexURL;
+
+        /*
+         * =====================================================================
+         * CDN:
+        indexURL = "https://cdn.jsdelivr.net/pyodide/v0.26.4/";
+         * =====================================================================
+         * local mirror:
+         *   https://www.jsdelivr.com/package/npm/pyodide?version=0.26.4
+         *   https://registry.npmjs.org/pyodide/-/pyodide-0.26.4.tgz
+         * =====================================================================
+         */
+        indexURL = window.location.href.replace(new RegExp('/[^/]*$'), '/js/pyodide-0.26.4/')
+
+        const { loadPyodide } = await import(indexURL + "pyodide.mjs");
+
+        let term;
+        globalThis.pyodide = await loadPyodide({
+          indexURL,
+          stdin: () => {
+            let result = prompt();
+            echo(result);
+            return result;
+          },
+        });
+
+        let namespace = pyodide.globals.get("dict")();
+        pyodide.runPython(
+          `
+            import sys
+            from pyodide.ffi import to_js
+            from pyodide.console import PyodideConsole, repr_shorten, BANNER
+            import __main__
+            BANNER = "Welcome to the yt-dlp web console."
+            pyconsole = PyodideConsole(__main__.__dict__)
+            import builtins
+            async def await_fut(fut):
+              res = await fut
+              if res is not None:
+                builtins._ = res
+              return to_js([res], depth=1)
+            def clear_console():
+              pyconsole.buffer = []
+        `,
+          { globals: namespace },
+        );
+
+        await pyodide.loadPackage('ssl');
+        await pyodide.loadPackage('pyodide_http');
+        await pyodide.loadPackage('whl/yt_dlp-2024.12.23-py3-none-any.whl');
+
+        await pyodide.runPython(`
+          import pyodide_http
+          import yt_dlp
+          import json
+          pyodide_http.patch_all()
+          print("yt_dlp imported: " + yt_dlp.version.__version__)
+        `);
+
+        let repr_shorten = namespace.get("repr_shorten");
+        let banner = namespace.get("BANNER");
+        let await_fut = namespace.get("await_fut");
+        let pyconsole = namespace.get("pyconsole");
+        let clear_console = namespace.get("clear_console");
+        const echo = (msg, ...opts) =>
+          term.echo(
+            msg
+              .replaceAll("]]", "&rsqb;&rsqb;")
+              .replaceAll("[[", "&lsqb;&lsqb;"),
+            ...opts,
+          );
+        namespace.destroy();
+
+        let ps1 = ">>> ",
+          ps2 = "... ";
+
+        async function lock() {
+          let resolve;
+          let ready = term.ready;
+          term.ready = new Promise((res) => (resolve = res));
+          await ready;
+          return resolve;
+        }
+
+        async function interpreter(command) {
+          let unlock = await lock();
+          term.pause();
+          // multiline should be split (useful when pasting)
+          for (const c of command.split("\n")) {
+            const escaped = c.replaceAll(/\u00a0/g, " ");
+            let fut = pyconsole.push(escaped);
+            term.set_prompt(fut.syntax_check === "incomplete" ? ps2 : ps1);
+            switch (fut.syntax_check) {
+              case "syntax-error":
+                term.error(fut.formatted_error.trimEnd());
+                continue;
+              case "incomplete":
+                continue;
+              case "complete":
+                break;
+              default:
+                throw new Error(`Unexpected type ${ty}`);
+            }
+            // In JavaScript, await automatically also awaits any results of
+            // awaits, so if an async function returns a future, it will await
+            // the inner future too. This is not what we want so we
+            // temporarily put it into a list to protect it.
+            let wrapped = await_fut(fut);
+            // complete case, get result / error and print it.
+            try {
+              let [value] = await wrapped;
+              if (value !== undefined) {
+                echo(
+                  repr_shorten.callKwargs(value, {
+                    separator: "\n<long output truncated>\n",
+                  }),
+                );
+              }
+              if (value instanceof pyodide.ffi.PyProxy) {
+                value.destroy();
+              }
+            } catch (e) {
+              if (e.constructor.name === "PythonError") {
+                const message = fut.formatted_error || e.message;
+                term.error(message.trimEnd());
+              } else {
+                throw e;
+              }
+            } finally {
+              fut.destroy();
+              wrapped.destroy();
+            }
+          }
+          term.resume();
+          await sleep(10);
+          unlock();
+        }
+
+        term = $("#yt-dlp-terminal").terminal(interpreter, {
+          greetings: banner,
+          prompt: ps1,
+          completionEscape: false,
+          completion: function (command, callback) {
+            callback(pyconsole.complete(command).toJs()[0]);
+          },
+          keymap: {
+            "CTRL+C": async function (event, original) {
+              clear_console();
+              term.enter();
+              echo("KeyboardInterrupt");
+              term.set_command("");
+              term.set_prompt(ps1);
+            },
+            TAB: (event, original) => {
+              const command = term.before_cursor();
+              // Disable completion for whitespaces.
+              if (command.trim() === "") {
+                term.insert("\t");
+                return false;
+              }
+              return original(event);
+            },
+          },
+        });
+
+        window.term = term;
+
+        pyconsole.stdout_callback = (s) => echo(s, { newline: false });
+        pyconsole.stderr_callback = (s) => {
+          term.error(s.trimEnd());
+        };
+        term.ready = Promise.resolve();
+        pyodide._api.on_fatal = async (e) => {
+          if (e.name === "Exit") {
+            term.error(e);
+            term.error("Pyodide exited and can no longer be used.");
+          } else {
+            term.error(
+              "Pyodide has suffered a fatal error. Please report this to the Pyodide maintainers.",
+            );
+            term.error("The cause of the fatal error was:");
+            term.error(e);
+            term.error("Look in the browser console for more details.");
+          }
+          await term.ready;
+          term.pause();
+          await sleep(15);
+          term.pause();
+        };
+
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.has("noblink")) {
+          $(".cmd-cursor").addClass("noblink");
+        }
+
+        $(".loading").hide();
+      }
+
+      window.console_ready = main();
+
+      /**
+       *
+       */
+      function parseScript(tag) {
+        var commands = [];
+        $('#pythonScript.'+tag+' pre').children('code').each(function(i) {
+          commands.push($(this).text());
+        });
+
+        processCommands(commands);
+        $('html, body').animate({
+                    scrollTop: $("#yt-dlp-terminal-title").offset().top
+        }, 400);
+      }
+
+      /**
+       *
+       */
+      function processCommands(commands) {
+        var commandIndex = 0;
+
+        setTimeout(processCommand,100);
+
+        function processCommand() {
+          window.term.exec(commands[commandIndex]);
+          commandIndex++;
+
+          if (commandIndex < commands.length) {
+            setTimeout(processCommand,100);
+          } else {
+            window.term.enable(); // important
+            setTimeout(pressEnter,1000);
+          }
+        }
+
+        function pressEnter() {
+          window.term.invoke_key("ENTER");
+        }
+      }
+    </script>
+
+  </body>
+</html>
