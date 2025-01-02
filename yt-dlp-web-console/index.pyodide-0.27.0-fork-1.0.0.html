@@ -203,7 +203,7 @@
          */
         indexURL = window.location.href.replace(new RegExp('/[^/]*$'), '/js/pyodide-0.27.0-fork-1.0.0/')
 
-        const libData = {}
+        let libData = {}
         for (const lib of [
           ['pyodide.asm.js', 'pyodide.asm.js'],
           ['pyodide.mjs',    'pyodide.mjs'],
@@ -235,13 +235,14 @@
             return result;
           },
           emscriptenSettings: {
-            locateFile:      (path) => (libData[path] ? arrayBufferToDataUri(libData[path]) : path),
             wasmBinary:      libData['wasmBinary'],
             instantiateWasm: false
           }
         });
 
         await loadPackages_v005(pyodide, libData, ['openssl', 'ssl', 'pyodide_http', 'yt_dlp'], ['zip', 'whl', 'whl', 'whl']);
+
+        libData = null;
 
 // TODO: figure out how to run the following code without causing Pyodide to crash
 /*
