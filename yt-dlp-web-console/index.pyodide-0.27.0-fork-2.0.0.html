@@ -192,16 +192,18 @@
          *   ssl-1.0.0-py2.py3-none-any.whl
          * =====================================================================
          * fork:
-         *   https://github.com/warren-bank/fork-pyodide/tree/dev/config-emscripten-settings/
-         *   https://github.com/warren-bank/fork-pyodide/releases/tag/0.27.0-fork%2Fv1.0.0%2Fconfig-emscripten-settings
-         *   https://github.com/warren-bank/fork-pyodide/releases/download/0.27.0-fork%2Fv1.0.0%2Fconfig-emscripten-settings/pyodide-core.tar.gz
+         *   https://github.com/warren-bank/fork-pyodide/tree/dev/load-binary-package/
+         *   https://github.com/warren-bank/fork-pyodide/releases/tag/0.27.0-fork%2Fv2.0.0%2Fload-binary-package
+         *   https://github.com/warren-bank/fork-pyodide/releases/download/0.27.0-fork%2Fv2.0.0%2Fload-binary-package/pyodide-core.tar.gz
          * files overwritten in local mirror:
+         *   pyodide.asm.js
+         *   pyodide.asm.wasm
          *   pyodide.d.ts
          *   pyodide.js
          *   pyodide.mjs
          * =====================================================================
          */
-        indexURL = window.location.href.replace(new RegExp('/[^/]*$'), '/js/pyodide-0.27.0-fork-1.0.0/')
+        indexURL = window.location.href.replace(new RegExp('/[^/]*$'), '/js/pyodide-0.27.0-fork-2.0.0/')
 
         const libData = {}
         for (const lib of [
@@ -241,22 +243,22 @@
           }
         });
 
-        await loadPackages_v005(pyodide, libData, ['openssl', 'ssl', 'pyodide_http', 'yt_dlp'], ['zip', 'whl', 'whl', 'whl']);
+        for (const pkg of [{name: 'openssl', format: 'zip'}, {name: 'ssl', format: 'whl'}, {name: 'pyodide_http', format: 'whl'}, {name: 'yt_dlp', format: 'whl'}]) {
+          const {name, format} = pkg;
+          await pyodide.loadBinaryPackage(name, libData[name], format);
+        }
 
-// TODO: figure out how to run the following code without causing Pyodide to crash
-/*
-        testPackages(pyodide, ['ssl', 'pyodide_http', 'yt_dlp']);
-
-        pyodide.runPython(`
-          import ssl
-          import pyodide_http
-          import yt_dlp
-          import json
-          ssl._create_default_https_context = ssl._create_unverified_context
-          pyodide_http.patch_all()
-          print("yt_dlp imported: " + yt_dlp.version.__version__)
-        `);
-*/
+        pyodide.runPython(
+          `
+            import ssl
+            import pyodide_http
+            import yt_dlp
+            import json
+            ssl._create_default_https_context = ssl._create_unverified_context
+            pyodide_http.patch_all()
+            print("yt_dlp imported: " + yt_dlp.version.__version__)
+          `
+        );
 
         let namespace = pyodide.globals.get("dict")();
         pyodide.runPython(
@@ -275,7 +277,7 @@
               return to_js([res], depth=1)
             def clear_console():
               pyconsole.buffer = []
-        `,
+          `,
           { globals: namespace },
         );
 
@@ -416,20 +418,6 @@
         }
 
         $(".loading").hide();
-
-/*
-        pyodide._module.locateFile = path => path;
-
-        processCommands(`
-          import ssl
-          import pyodide_http
-          import yt_dlp
-          import json
-          ssl._create_default_https_context = ssl._create_unverified_context
-          pyodide_http.patch_all()
-          print("yt_dlp imported: " + yt_dlp.version.__version__)
-        `.trim().split(/\r?\n/).map(line => line.trim()));
-*/
       }
 
       window.console_ready = main();
@@ -481,82 +469,6 @@
         );
 
         return `data:${mimeType};base64,${base64String}`;
-      }
-
-      async function loadPackages_v001(pyodide, libData, packages) {
-        const options = {
-          messageCallback: console.log,
-          errorCallback:   console.error,
-          checkIntegrity:  false
-        };
-
-        for (const name of packages) {
-          await pyodide.loadPackage(arrayBufferToDataUri(libData[name]), options);
-        }
-      }
-
-      async function loadPackages_v002(pyodide, libData, packages) {
-        const options = {
-          messageCallback: console.log,
-          errorCallback:   console.error,
-          checkIntegrity:  false
-        };
-
-        for (const name of packages) {
-          await pyodide.loadPackage(arrayBufferToDataUri(libData[name]) + '#/datauri_' + name + '-2025.01.01-py3-none-any.whl', options);
-        }
-      }
-
-      async function loadPackages_v003(pyodide, libData, packages) {
-        const options = {
-          messageCallback: console.log,
-          errorCallback:   console.error,
-          checkIntegrity:  false
-        };
-
-        const add_lockfile_package = function(name) {
-          if (!pyodide._api.lockfile_packages[name]) {
-            pyodide._api.lockfile_packages[name] = {
-              name,
-              version: "",
-              file_name: name + ".whl",
-              install_dir: "site",
-              sha256: "",
-              package_type: "package",
-              imports: [],
-              depends: [],
-              shared_library: !1
-            };
-          }
-        };
-
-        for (const name of packages) {
-          add_lockfile_package(name);
-          await pyodide.loadPackage(arrayBufferToDataUri(libData[name]) + '#/datauri_' + name + '-2025.01.01-py3-none-any.whl', options);
-        }
-      }
-
-      async function loadPackages_v004(pyodide, libData, packages) {
-        for (const name of packages) {
-          pyodide.toPy(new Uint8Array(libData[name]));
-        }
-      }
-
-      async function loadPackages_v005(pyodide, libData, packages, formats) {
-        for (let i=0; i < packages.length; i++) {
-          await pyodide.unpackArchive(libData[packages[i]], formats[i]);
-        }
-      }
-
-      function testPackages(pyodide, packages) {
-        for (const name of packages) {
-          try {
-            pyodide.pyimport(name);
-          }
-          catch(e) {
-            console.error(e)
-          }
-        }
       }
     </script>
 
