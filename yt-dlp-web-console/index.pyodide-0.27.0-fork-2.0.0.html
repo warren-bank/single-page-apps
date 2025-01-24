@@ -261,6 +261,24 @@
           `
         );
 
+        // monkey patch workaround for open pull request:
+        //   https://github.com/koenvo/pyodide-http/pull/43
+        pyodide.runPython(
+          `
+            original_urlopen = pyodide_http._urllib.urlopen
+
+            def modified_urlopen(url, *args, **kwargs):
+                response = original_urlopen(url, *args, **kwargs)
+                if isinstance(url, pyodide_http._urllib.urllib.request.Request):
+                    response.url = url.full_url
+                else:
+                    response.url = url
+                return response
+
+            pyodide_http._urllib.urlopen = modified_urlopen
+          `
+        );
+
         let namespace = pyodide.globals.get("dict")();
         pyodide.runPython(
           `
