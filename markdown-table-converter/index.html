@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Markdown Table Converter</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <script src="./js/markdown-table-converter.js"></script>
+    <script src="./js/event_handlers.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="https://warren-bank.github.io/single-page-apps/markdown-table-converter/index.html">
+        <h1>Markdown Table Converter</h1>
+      </a>
+    </header>
+    <section class="reader-container">
+      <div class="form-container">
+        <div class="input-container">
+          <h3>Input Format:</h3>
+          <div>
+            <div>
+              <input name="format" type="radio" value="html" checked />
+              <label>HTML table</label>
+            </div>
+            <div>
+              <input name="format" type="radio" value="token" />
+              <label>Token separated list</label>
+            </div>
+            <div class="token-container hide">
+              <label>Token Regex:</label>
+              <input id="token_regex" value="\t" />
+            </div>
+          </div>
+          <h3>Input Options:</h3>
+          <div>
+            <div>
+              <input id="has_column_headings" type="checkbox" checked />
+              <label>First row contains column headings</label>
+            </div>
+          </div>
+          <h3>Output Options:</h3>
+          <div>
+            <div>
+              <input id="add_whitespace" type="checkbox" checked />
+              <label>Add whitespace to normalize the width of each column</label>
+            </div>
+          </div>
+          <textarea id="input_data" rows="10"></textarea>
+        </div>
+        <div id="buttons">
+          <button type="submit">Convert to Markdown table</button>
+        </div>
+      </div>
+      <pre class="results-container"></pre>
+    </section>
+  </body>
+</html>
