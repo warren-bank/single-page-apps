@@ -1,0 +1,132 @@
+/* Layout styles */
+#contact-list {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+}
+
+#chat-window {
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+}
+
+/* Drag-and-drop area */
+#upload-area {
+    background-color: #e9ecef;
+    color: #495057;
+    border: 2px dashed #adb5bd;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#upload-area:hover {
+    background-color: #dee2e6;
+}
+
+.search-icon {
+    margin-right: 5px;
+}
+
+/* Message styles */
+.card.incoming {
+    background-color: #f0f9ff;
+    color: #212529;
+}
+
+.card.outgoing {
+    background-color: #d1ecf1;
+    color: #212529;
+}
+
+.card-footer {
+    font-size: 0.85rem;
+    color: #495057;
+}
+
+/* Dark mode styles */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.dark-mode #chat-window {
+    background-color: #1e1e1e;
+    border-color: #333;
+}
+
+body.dark-mode .list-group-item {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+body.dark-mode .btn {
+    background-color: #333;
+    color: #e0e0e0;
+    border-color: #444;
+}
+
+body.dark-mode .btn-outline-primary {
+    color: #fff;
+    border-color: #555;
+}
+
+/* Styling for the export dropdown menu */
+.dropdown-menu {
+    min-width: 150px; /* Ensure a consistent size */
+}
+
+.dropdown-menu-end {
+    right: 0;
+    left: auto;
+}
+
+/* Initial state for the search bar (collapsed) */
+.search-bar-collapsed {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.5s ease, opacity 0.3s ease;
+}
+
+/* Expanded state for the search bar */
+.search-bar-expanded {
+    max-height: 100px; /* Passe den Wert an die tatsächliche Höhe der Suchleiste an */
+    opacity: 1;
+    overflow: visible;
+    transition: max-height 0.5s ease, opacity 0.3s ease;
+}
+#stats-container,
+#top-contacts-container {
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: #f8f9fa;
+}
+
+.stat-item,
+.top-contact-item {
+    border-bottom: 1px solid #dee2e6;
+    padding: 0.5rem 0;
+}
+
+.stat-item:last-child,
+.top-contact-item:last-child {
+    border-bottom: none;
+}
+
+h5 {
+    font-weight: bold;
+}
+
+h1 > a {
+    color: inherit;
+    text-decoration: none;
+}
+h1 > a:hover {
+    text-decoration: underline;
+}
