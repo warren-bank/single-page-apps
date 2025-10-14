@@ -40,9 +40,10 @@ body > header > a > h1 {
 .reader-container > .form-container > .input-container > h3,
 .reader-container > .form-container > .input-container > div,
 .reader-container > .form-container > .input-container > div > div,
-.reader-container > .form-container > .input-container > textarea {
+.reader-container > .form-container > .input-container textarea {
   display: block;
   width: 100%;
+  box-sizing: border-box;
 }
 .reader-container > .form-container > .input-container > div > div {
   padding-left: 2em;

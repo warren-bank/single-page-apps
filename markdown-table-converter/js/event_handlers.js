@@ -1,8 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
+  const input_data          = document.getElementById('input_data')
   const token_regex         = document.getElementById('token_regex')
   const has_column_headings = document.getElementById('has_column_headings')
+  const filter_columns      = document.getElementById('filter_columns')
   const add_whitespace      = document.getElementById('add_whitespace')
-  const input_data          = document.getElementById('input_data')
   const token_container     = document.querySelector('div.token-container')
   const submit_button       = document.querySelector('#buttons > button[type="submit"]')
   const output_container    = document.querySelector('pre.results-container')
@@ -37,10 +38,10 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       switch(format.value) {
         case 'html':
-          markdown = window.convert_html_table_to_markdown_table(input_data.value, has_column_headings.checked, add_whitespace.checked)
+          markdown = window.convert_html_table_to_markdown_table(input_data.value, filter_columns.value, has_column_headings.checked, add_whitespace.checked)
           break
         case 'token':
-          markdown = window.convert_token_separated_list_to_markdown_table(input_data.value, token_regex.value, has_column_headings.checked, add_whitespace.checked)
+          markdown = window.convert_token_separated_list_to_markdown_table(input_data.value, token_regex.value, filter_columns.value, has_column_headings.checked, add_whitespace.checked)
           break
       }
     }

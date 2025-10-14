@@ -16,6 +16,8 @@
     <section class="reader-container">
       <div class="form-container">
         <div class="input-container">
+          <h3>Input Data:</h3>
+          <textarea id="input_data" rows="10"></textarea>
           <h3>Input Format:</h3>
           <div>
             <div>
@@ -38,6 +40,13 @@
               <label>First row contains column headings</label>
             </div>
           </div>
+          <h3>Input Filters:</h3>
+          <div>
+            <div>
+              <label>Comma separated list of 0-based column indices to exclude</label>
+              <textarea id="filter_columns" rows="1"></textarea>
+            </div>
+          </div>
           <h3>Output Options:</h3>
           <div>
             <div>
@@ -45,7 +54,6 @@
               <label>Add whitespace to normalize the width of each column</label>
             </div>
           </div>
-          <textarea id="input_data" rows="10"></textarea>
         </div>
         <div id="buttons">
           <button type="submit">Convert to Markdown table</button>

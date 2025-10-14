@@ -1,12 +1,16 @@
 (function(){
 
-  const convert_html_table_to_markdown_table = (html_table, has_column_headings, should_add_whitespace) => {
-    const rows = extract_rows_from_html_table(html_table)
+  const convert_html_table_to_markdown_table = (html_table, filter_column_indices, has_column_headings, should_add_whitespace) => {
+    let rows
+    rows = extract_rows_from_html_table(html_table)
+    rows = filter_columns(rows, filter_column_indices)
     return format_rows_to_markdown(rows, has_column_headings, should_add_whitespace)
   }
 
-  const convert_token_separated_list_to_markdown_table = (token_separated_list, token_regex, has_column_headings, should_add_whitespace) => {
-    const rows = extract_rows_from_token_separated_list(token_separated_list, token_regex)
+  const convert_token_separated_list_to_markdown_table = (token_separated_list, token_regex, filter_column_indices, has_column_headings, should_add_whitespace) => {
+    let rows
+    rows = extract_rows_from_token_separated_list(token_separated_list, token_regex)
+    rows = filter_columns(rows, filter_column_indices)
     return format_rows_to_markdown(rows, has_column_headings, should_add_whitespace)
   }
 
@@ -57,6 +61,29 @@
     }
 
     return rows
+  }
+
+  const filter_columns = (rows, filter_column_indices) => {
+    if (!filter_column_indices) return rows
+
+    filter_column_indices = filter_column_indices.split(',').map(val => parseInt(val.trim(), 10)).filter(val => !isNaN(val)).sort((a,b) => b-a)
+    if (!filter_column_indices.length) return rows
+
+    const filtered_rows = []
+    for (let old_row of rows) {
+      const new_row = []
+
+      for (let i = (old_row.length - 1); i >= 0; i--) {
+        if (filter_column_indices.indexOf(i) === -1) {
+          new_row.unshift(old_row[i])
+        }
+      }
+
+      if (new_row.length)
+        filtered_rows.push(new_row)
+    }
+
+    return filtered_rows
   }
 
   const format_rows_to_markdown = (rows, has_column_headings, should_add_whitespace) => {
