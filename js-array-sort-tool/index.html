@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>JavaScript Array Sort Tool</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <script src="./js/js-array-sort-tool.js"></script>
+    <script src="./js/event_handlers.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="https://warren-bank.github.io/single-page-apps/js-array-sort-tool/index.html">
+        <h1>JavaScript Array Sort Tool</h1>
+      </a>
+    </header>
+    <section class="reader-container">
+      <div class="form-container">
+        <div class="input-container">
+          <h3>JSON Array:</h3>
+          <textarea id="json_array" rows="10"></textarea>
+          <h3>JavaScript Sort Comparator Function:</h3>
+          <pre>function(a, b) {</pre>
+          <textarea id="js_sort_comparator_function" rows="10"></textarea>
+          <pre>}</pre>
+          <div>
+            <div>
+              <select id="common_comparators">
+                <option value="">--Common Comparators--</value>
+                <option value="lexicographical">Default: Lexicographical Asc</value>
+                <option value="localecompare">String: localeCompare() Asc</value>
+                <option value="numerical">Number: Numerical Asc</value>
+                <option value="bigint">Number: BigInt Asc</value>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="buttons">
+          <button id="validate_button" type="submit">Validate</button>
+          <button id="sort_button" type="submit">Sort</button>
+          <button id="copy_result_button" type="submit">Copy Result</button>
+        </div>
+      </div>
+      <pre class="results-container"></pre>
+    </section>
+  </body>
+</html>
