@@ -1,0 +1,75 @@
+body {
+  margin: 0;
+  padding: 0;
+  width: fit-content;
+  min-width: 100%;
+}
+
+body > header {
+  font-family: Mark Pro Book,Helvetica,Arial,sans-serif;
+  font-size: 12px;
+  line-height: 1em;
+
+  position: sticky;
+  z-index: 999;
+  top: 0;
+  left: 0em;
+  padding-left: 1em;
+  max-width: calc(100vw - 2.5em);
+  height: 12em;
+  background-color: #fff;
+  border-bottom: 1px solid #000;
+}
+body > header > div.hide {
+  display: none;
+}
+body > header > div > div.spacer {
+  height: 1em;
+}
+body > header > div#input-calibration > div > input#calibrate_units {
+  max-width: 6em;
+}
+body > header > div#output-measurement > div > span#result {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+body > section#ruler-container {
+  background-color: #000;
+  position: relative;
+}
+body > section#ruler-container > img {
+/*
+  max-width: 100%;
+  max-height: calc(100% - 12em);
+*/
+  margin: 0.25em;
+}
+body > section#ruler-container > div.ruler {
+  position: absolute;
+  z-index: 998;
+  background-color: #000;
+}
+body > section#ruler-container > div.ruler.x-axis {
+  height: 2px;
+  /* dynamic onmousedown: top, left */
+  /* dynamic onmousemove: width */
+}
+body > section#ruler-container > div.ruler.y-axis {
+  width: 2px;
+  /* dynamic onmousedown: top, left */
+  /* dynamic onmousemove: height */
+}
+
+body > section#ruler-container > article#usage {
+  background-color: #fff;
+  font-family: Mark Pro Book,Helvetica,Arial,sans-serif;
+  font-size: 16px;
+  padding: 1em;
+  text-align: center;
+}
+body > section#ruler-container > article#usage > div {
+  display: inline-block;
+  margin: 0 auto;
+  text-align: left;
+}

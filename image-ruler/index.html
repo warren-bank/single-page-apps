@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Image Ruler</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <script src="./js/event_handlers.js"></script>
+  </head>
+  <body>
+    <header>
+      <div id="input-image">
+        <div class="spacer"></div>
+        <div>
+          Import Image from: <input id="import_image_clipboard" type="button" value="Clipboard" /> or <input id="import_image_file" type="button" value="File" />
+        </div>
+      </div>
+      <div id="input-axis">
+        <div class="spacer"></div>
+        <div>
+          Axis:
+          <select id="axis">
+            <option value="x">X (horizontal)</option>
+            <option value="y">Y (vertical)</option>
+          </select>
+        </div>
+      </div>
+      <div class="hide" id="input-calibration">
+        <div class="spacer"></div>
+        <div>
+          <input id="calibrate_units" type="number" step="0.1" /> custom units <input id="calibrate_button" type="button" value="Calibrate" />
+        </div>
+      </div>
+      <div class="hide" id="output-measurement">
+        <div class="spacer"></div>
+        <div>
+          Measurement: <span id="result"></span> custom units
+        </div>
+      </div>
+    </header>
+    <section id="ruler-container">
+      <article id="usage">
+        <div>
+          <h3>Image Ruler</h3>
+          <p>
+            Tool to measure horizontal and vertical lines drawn on an image.<br>Lengths are converted to a custom unit (ex: inches, cm) by calibrating to a line of a known length.
+          </p>
+          <h4>Usage:</h4>
+          <ol>
+            <li>import an image</li>
+            <li>choose an axis</li>
+            <li>calibrate:
+              <ol>
+                <li>draw a line (click, drag, release)</li>
+                <li>enter the length of this line in a custom unit</li>
+                <li>click: "Calibrate"</li>
+              </ol>
+            </li>
+            <li>measure:
+              <ol>
+                <li>draw another line along the same axis</li>
+                <li>read its length, as measured in the custom unit</li>
+              </ol>
+            </li>
+          </ol>
+        </div>
+      </article>
+    </section>
+  </body>
+</html>
