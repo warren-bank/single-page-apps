@@ -1,0 +1,320 @@
+/* Copyright 2014-2015 Robert Schroll
+ *
+ * This file is part of Crosswords and is distributed under the terms
+ * of the GPL. See the file LICENSE for full details.
+ */
+
+puzzle-page {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: none;
+}
+
+puzzle-page header h1 {
+    max-width: calc(100% - 216px);
+}
+.actions .menu {
+    display: none;
+}
+
+#gridcontainer {
+    position: absolute;
+    left: 15px;
+    right: 50%;
+    top: 76px;
+    bottom: 0;
+    overflow: hidden;
+}
+
+#across {
+    position: absolute;
+    left: 50%;
+    right: 0;
+    top: 76px;
+    bottom: calc(50% - 38px);
+    overflow: hidden;
+    border-bottom: 0.1rem solid #c9c9c9;
+}
+
+#down {
+    position: absolute;
+    left: 50%;
+    right: 0;
+    top: calc(50% + 38px);
+    bottom: 0;
+    overflow: auto;
+}
+
+@media all and (orientation:portrait) {
+    #gridcontainer {
+        right: 15px;
+        bottom: calc(50% - 38px);
+    }
+
+    #across {
+        left: 0;
+        right: 50%;
+        top: calc(50% + 38px);
+        bottom: 0;
+        border-bottom: none;
+        border-right: 0.1rem solid #c9c9c9;
+    }
+}
+
+@media only screen and (max-width: 40rem) and (max-height: 40rem) {
+    puzzle-page header.page {
+        right: calc((5rem - 60px)/2);
+        bottom: calc((5rem - 60px)/2);
+        width: auto;
+        height: auto;
+        padding: 0 10px;
+        border-radius: 30px;
+        box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.5);
+    }
+    puzzle-page header.page h1 {
+        display: none;
+    }
+    puzzle-page header.page:after {
+        display: none;
+    }
+    puzzle-page header.page .actions, puzzle-page header.page button {
+        padding: 0;
+        background: transparent;
+    }
+    puzzle-page header.page.collapsed button, puzzle-page header.page.collapsed li {
+        display: none;
+    }
+    puzzle-page header.page .actions .menu {
+        display: list-item;
+    }
+    
+    #gridcontainer {
+        top: 6px;
+        left: 6px;
+        right: 6px;
+        bottom: calc(5rem + 6px);
+    }
+    
+    #across, #down {
+        left: 0;
+        right: 0;
+        top: auto;
+        height: 2.5rem;
+        border-top: none;
+    }
+    #across {
+        bottom: 2.5rem;
+        border-bottom: 1px solid #ededed;
+    }
+    section.clues.seldir{
+        background: #ffff99;
+        color: #606060;
+    }
+    section.clues{
+        background: #f4f4c2;
+        color: #6c6c6c;
+    }
+    section.clues header {
+        position: absolute;
+        width: 3.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        -webkit-transform: translateY(-50%);
+        padding: 0;
+        text-align: right;
+        border: none;
+        line-height: normal;
+    }
+    section.clues ul {
+        top: 0;
+        bottom: 0;
+        left: 4rem;
+        right: 56px;
+    }
+    section.clues ul li {
+        display: none;
+        border: none;
+    }
+    section.clues ul li.selClue, section.clues ul li.selClueP {
+        display: block;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        -webkit-transform: translateY(-50%);
+        max-height: 100%;
+        overflow: auto;
+        padding-left: 0.5rem;
+    }
+}
+
+.clues {
+    border-top: none;
+}
+
+.clues ul {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 1.9rem;  /* Header line-height + bottom border */
+    bottom: 0;
+    overflow: auto;
+}
+
+#grid {
+    display: block;
+    position: absolute;
+    transform-origin: top left;
+    -webkit-transform-origin: top left;
+    border: 2px solid black;
+    border-spacing: 0;
+    color: black;
+    background: white;
+    transition: background 2s, box-shadow 2s;
+    -webkit-transition: background 2s, box-shadow 2s;
+}
+
+#grid.solved {
+    background: #efe;
+    box-shadow: inset 0 0 5em #7f7;
+}
+
+#gridcontainer.animate #grid {
+    transition: transform 0.15s ease, background 2s, box-shadow 2s;
+    -webkit-transition: -webkit-transform 0.15s ease, background 2s, box-shadow 2s;
+}
+
+/* Specify table to be more specific than .animate */
+#grid.checking, #gridcontainer.animate #grid.checking {
+    background: #ffe;
+    box-shadow: inset 0 0 5em #ff7;
+    transition: background 0s, box-shadow 0s;
+    -webkit-transition: background 0s, box-shadow 0s;
+}
+
+#grid tr {
+    display: block;
+    white-space: pre;
+}
+
+#grid td {
+    display: inline-block;
+    position: relative;
+    width: 1.5em;
+    height: 1.5em;
+    border: 1px solid black;
+    text-align: center;
+    cursor: text;
+}
+
+#grid td.block {
+    background: black;
+    cursor: default;
+}
+
+#grid td.circle{
+    background-image: url(../img/circle.svg);
+    background-size: contain;
+}
+
+#grid .letter {
+    line-height: 1.5em;
+}
+
+#grid .number {
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 65%;
+    margin-top: -0.15rem;
+}
+
+#grid .selCells {
+    background: #ffff99;
+}
+
+#grid .selCell {
+    background: #ffbb99;
+}
+
+#grid .error {
+    color: red;
+}
+
+#Hscroll, #Vscroll {
+    position: absolute;
+    background: #999;
+    opacity: 0;
+    transition: opacity 2s;
+    -webkit-transition: opacity 2s;
+    border-radius: 3px;
+}
+
+#Hscroll.show, #Vscroll.show {
+    opacity: 0.75;
+    transition: none;
+    -webkit-transition: none;
+}
+
+#Hscroll {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 6px;
+}
+
+#Vscroll {
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 6px;
+}
+
+#gridcontainer.animate > div {
+    transition: top 0.15s, left 0.15s, height 0.15s, width 0.15s, opacity 2s;
+    -webkit-transition: top 0.15s, left 0.15s, height 0.15s, width 0.15s, opacity 2s;
+}
+
+/* Get rid of chevrons */
+section.clues ul li::after {
+    display: none;
+}
+
+section.clues ul li {
+    height: auto;
+    border-bottom: none;
+    line-height: normal;
+    white-space: normal;
+}
+
+section.clues.seldir .selClue {
+    background: #ffff99;
+    color: #606060;
+}
+section.clues .selClue {
+    background: #f4f4c2;
+    color: #6c6c6c;
+}
+
+#info-dialog p {
+    margin-top: 0.5rem;
+}
+
+#info-copyright {
+    font-size: 0.7rem;
+}
+
+#load-error-dialog p {
+    margin-top: 1rem;
+}
+
+#error-message::before, #error-message::after {
+    content: "\"";
+}
+
+#error-url {
+    font-style: italic;
+    word-wrap: break-word;
+}

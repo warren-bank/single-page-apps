@@ -1,0 +1,412 @@
+/*
+ * Copyright (C) 2013, 2014 Adnane Belmadiaf <daker@ubuntu.com>
+ * License granted by Canonical Limited
+ *
+ * This file is part of ubuntu-html5-ui-toolkit.
+ *
+ * This package is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 3 of the
+ * License, or
+ * (at your option) any later version.
+
+ * This package is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/>
+ */
+
+/* Hard reset
+-------------------------------------------------- */
+* {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+div,
+span,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+section,
+summary,
+time,
+audio,
+video {
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+ul {
+  list-style: none;
+}
+
+/* ----------------------------------
+ * Basic Styling
+ * ---------------------------------- */
+/* Workarround to load the Ubuntu Light font pad.lv/1186372 */
+@font-face {
+  font-family: 'Ubuntu';
+  font-style: normal;
+  font-weight: 300;
+  src: local("Ubuntu Light"), local("Ubuntu-Light"), url(ubuntu-light.woff) format("woff");
+}
+
+body {
+  background: #ededed;
+  font-family: "Ubuntu";
+  font-weight: normal;
+  color: #787878;
+}
+
+p {
+  font: 0.9rem "Ubuntu";
+  color: #787878;
+  line-height: 1.33;
+}
+
+h1,
+h2,
+h3 {
+  color: #747278;
+  font: 1.3rem "Ubuntu";
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+h2 {
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+h3 {
+  font-size: 0.9rem;
+  line-height: 1.3;
+}
+
+/* ----------------------------------
+ * Headers
+ * ---------------------------------- */
+header.page {
+  background: #ededed;
+  height: 60px;
+  width: 100%;
+  position: fixed;
+  z-index: 10;
+}
+header.page:after {
+  background: #c2c2c2;
+  content: "";
+  border-top: 1px solid #afafaf;
+  height: 15px;
+  width: 100%;
+  display: block;
+  position: absolute;
+  top: 60px;
+}
+
+button.back {
+  background: #ededed;
+  width: 40px;
+  height: 60px;
+  line-height: 60px;
+  padding: 0;
+  float: left;
+  cursor: pointer;
+  border: none;
+  position: relative;
+}
+button.back:after {
+  content: "";
+  display: block;
+  width: 20px;
+  height: 20px;
+  background: transparent url("../img/back.svg") no-repeat center center;
+  background-size: 100%;
+  margin: 0 auto;
+}
+button.back:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+header.page h1 {
+  font-family: "Ubuntu";
+  font-size: x-large;
+  font-weight: 300;
+  text-decoration: none;
+  background: #ededed;
+  color: #5d5d5d;
+  float: left;
+  height: 60px;
+  line-height: 60px;
+  padding-left: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+  z-index: 10;
+}
+header.page button + h1 {
+  padding-left: 0;
+}
+
+.actions {
+  float: right;
+  height: 60px;
+  display: inline-block;
+  padding-right: 8px;
+  background: #ededed;
+  position: relative;
+  z-index: 10;
+}
+.actions li {
+  border: 0;
+  padding: 0;
+  width: 40px;
+  height: 60px;
+  line-height: 60px;
+  cursor: pointer;
+  float: left;
+  background: transparent;
+}
+.actions li img {
+  position: relative;
+  top: 20px;
+  display: block;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  background-size: 100%;
+  margin: 0 auto;
+}
+.actions li span {
+  display: none;
+}
+.actions li:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* ----------------------------------
+ * Dialog
+ * ---------------------------------- */
+overlay-dialog {
+  background: #000;
+  opacity: 0.9;
+  overflow: hidden;
+  position: absolute;
+  z-index: 100;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0;
+  font-size: 0;
+  /* Using font-size: 0; we avoid the unwanted visual space (about 3px)
+  created by white-spaces and break lines in the code betewen inline-block elements */
+  color: #fff;
+  text-align: center;
+  height: 100%;
+}
+overlay-dialog > div {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  font-size: 1.5rem;
+  color: #FAFAFA;
+  width: 100%;
+  display: inline-block;
+  /*overflow-y: scroll;*/
+  vertical-align: middle;
+  white-space: normal;
+}
+overlay-dialog:before {
+  content: "";
+  display: inline-block;
+  vertical-align: middle;
+  width: 0.1rem;
+  height: 100%;
+  margin-left: -0.1rem;
+}
+overlay-dialog h1 {
+  margin: 0;
+}
+overlay-dialog p {
+  margin: 0;
+}
+overlay-dialog menu {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  white-space: nowrap;
+  margin: 0 auto;
+  margin-top: 1rem;
+  display: block;
+  text-align: center;
+}
+overlay-dialog menu button {
+  display: block;
+  margin: 0 auto;
+  margin-bottom: 10px;
+  width: 200px;
+}
+overlay-dialog menu button:last-child {
+  margin-bottom: 0;
+}
+
+/* Tablet */
+@media only screen and (min-width: 20rem) {
+  overlay-dialog {
+    background: rgba(0, 0, 0, 0.6);
+    opacity: 1;
+  }
+  overlay-dialog > div {
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+    width: 18.7rem;
+    padding: 1.8rem;
+  }
+  overlay-dialog menu button {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* ----------------------------------
+ * Buttons
+ * ---------------------------------- */
+button {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  display: inline-block;
+  width: 100%;
+  height: 42px;
+  vertical-align: middle;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  background: #dd4814;
+  border: 2px solid #dd4814;
+  border-radius: 6px;
+  color: white;
+  font-family: "Ubuntu";
+  font-size: 1rem;
+  padding: 9px 25px;
+  text-align: center;
+  text-decoration: none;
+  position: relative;
+}
+
+/* ----------------------------------
+ * Lists
+ * ---------------------------------- */
+section.list {
+  border-top: 1px solid #f0f0f0;
+}
+section.list header {
+  border-bottom: 0.1rem solid #c9c9c9;
+  line-height: 1.8rem;
+  color: #787878;
+  font-size: 0.9rem;
+  padding-left: 1rem;
+}
+section.list ul {
+  list-style: none;
+}
+section.list ul li {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  width: 100%;
+  height: 3.1rem;
+  border-top: 1px solid #ebebeb;
+  border-bottom: solid 0.1rem #c7c7c7;
+  color: #787878;
+  position: relative;
+  line-height: 3rem;
+  padding-left: 1rem;
+  padding-right: 1.5rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+section.list ul li:after {
+  content: "";
+  background: transparent url(../img/chevron.svg) no-repeat center 0.5rem;
+  background-size: 70%;
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  top: 50%;
+  right: 0;
+  margin-top: -1.2rem;
+  z-index: 0;
+}

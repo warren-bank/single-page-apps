@@ -1,0 +1,157 @@
+/* Copyright 2014-2015 Robert Schroll
+ *
+ * This file is part of Crosswords and is distributed under the terms
+ * of the GPL. See the file LICENSE for full details.
+ */
+
+list-page {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+#sources {
+    position: absolute;
+    top: 76px;
+    bottom: 0;
+    left: 0;
+    right: 50%;
+    overflow: auto;
+}
+
+#dates {
+    position: absolute;
+    top: 76px;
+    bottom: 0;
+    left: 50%;
+    right: 0;
+    overflow: auto;
+}
+
+#dates li {
+    padding-right: 4.5rem;
+}
+
+#dates li > span {
+    position: absolute;
+    right: 2rem;
+}
+
+#dates.deleteMode ul li:after {
+    display: none;
+}
+#dates.deleteMode li > span {
+    right: 1rem;
+}
+
+#dates-notes {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+#dates-notes::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 0.1rem;
+    height: 100%;
+    margin-left: -0.1rem;
+}
+
+#dates-notes span {
+    display: inline-block;
+    vertical-align: middle;
+    width: 50%;
+}
+
+#list-page [data-role="footer"] {
+    display: none !important;
+}
+
+#sources .selected {
+    background: #c2c2c2;
+    color: #f8f8f8;
+    border-top-color: #c2c2c2;
+    border-bottom-color: #afafaf;
+}
+#sources li.selected:after {
+    background-image: url(../img/chevron-light.svg);
+}
+#sources.deleteMode li > span {
+    position: absolute;
+    right: 2rem;
+}
+
+@keyframes busy-gradient {
+    0% { background-position: left bottom; }
+    100% { background-position: right bottom; }
+}
+@-webkit-keyframes busy-gradient {
+    0% { background-position: left bottom; }
+    100% { background-position: right bottom; }
+}
+li.busy {
+    background-image: linear-gradient(105deg, #ededed, #ddd, #ededed);
+    background-size: 25% 100%;
+    -webkit-animation-name: busy-gradient;
+    -webkit-animation-duration: 3s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+    animation-name: busy-gradient;
+    animation-duration: 3s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+#fileinput {
+    display: none;
+}
+
+@media only screen and (max-width: 40rem) {
+    #sources {
+        right: 0;
+    }
+    #dates {
+        visibility: hidden;
+    }
+    .view-dates #sources {
+        visibility: hidden;
+        overflow: hidden;
+        top: 60px;
+        border-top: none;
+    }
+    .view-dates #dates {
+        left: 0;
+        top: calc(60px + 3.1rem);
+        visibility: visible;
+    }
+    
+    .view-dates header.page:after {
+        display: none;
+    }
+    .view-dates #sources .selected {
+        visibility: visible;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        border-top: 1px solid #afafaf;
+        border-bottom-color: #c7c7c7;
+        padding-left: 32px;
+        font-size: 1rem;
+    }
+    .view-dates #sources li.selected:after {
+        left: 0;
+        right: auto;
+        background-image: url(../img/back-light.svg);
+    }
+    #sources.deleteMode li > span {
+        right: 1rem;
+    }
+}

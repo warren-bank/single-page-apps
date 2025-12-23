@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!--
+Copyright 2014-2015 Robert Schroll
+
+This file is part of Crosswords and is distributed under the terms
+of the GPL. See the file LICENSE for full details.
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Crossword Puzzles</title>
+    <meta name="description" content="Crossword Puzzles">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+
+    <!-- Ubuntu UI Style imports - Ambiance theme -->
+    <link href="css/template.css" rel="stylesheet" type="text/css" />
+
+    <link href="css/app.css" rel="stylesheet" type="text/css" />
+    <link href="css/list.css" rel="stylesheet" type="text/css" />
+    <link href="css/puzzle.css" rel="stylesheet" type="text/css" />
+    <link href="css/about.css" rel="stylesheet" type="text/css" />
+
+    <script src="js/hammer.js"></script>
+    <script src="js/riot.js"></script>
+    <!-- Application script -->
+    <script src="js/loaders.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/dnd.js" defer></script>
+  </head>
+
+  <body>
+    <input type="password" id="focuser" />
+    <div id="focuser-hide"></div>
+    <div id="drag-accept"><span>Drop file<br />to load puzzle</span></div>
+    
+    <list-page></list-page>
+    <puzzle-page></puzzle-page>
+    <about-page></about-page>
+    <overlay-dialog id="load-error-dialog" title="Error Loading Puzzle" buttonlabel="Bummer">
+      <p>Crosswords received an error, <span id="error-message">{ error }</span>,
+      while trying to open the puzzle at <span id="error-url">{ url }</span>.</p>
+    </overlay-dialog>
+    <overlay-dialog id="info-dialog" buttonlabel="OK">
+      <p id="info-creator">{ creator }</p>
+      <p id="info-description">{ description }</p>
+      <p id="info-copyright">{ copyright }</p>
+    </overlay-dialog>
+    
+    <script src="js/tags.js"></script>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script>
+        var displayMixin = {
+          init: function () {
+            this.displayed = false;
+            this.on("update", function () {
+              this.root.style.display = this.displayed ? "block" : "none";
+            });
+          },
+          
+          close: function (event) {
+            event.preventUpdate = true;
+            window.history.back();
+          }
+        };
+        riot.mixin('display', displayMixin);
+      
+        var list = riot.mount("list-page")[0];
+        var puzzle = riot.mount("puzzle-page")[0];
+        var about = riot.mount("about-page")[0];
+        var dialogs = riot.mount("overlay-dialog");
+        
+        riot.route.parser(function (path) {
+          path = decodeURI(path);
+          var command = path.split("/", 1)[0];
+          var args = path.slice(command.length + 1);
+          return [command, args];
+        });
+        
+        riot.route(function (command, args) {
+          if (command == "error") {
+            var arglist = args.split("~~~");
+            dialogs[0].update({ displayed: true, error: arglist[0], url: arglist[1] });
+            list.update();  // Stop busy throbber
+            return;  // Don't let other things hide themselves
+          } else if (dialogs[0].displayed) {
+            dialogs[0].update({ displayed: false });
+          }
+          
+          if (command == "info") {
+            var arglist = args.split("~~~");
+            dialogs[1].update({ displayed: true, title: arglist[0], creator: arglist[1],
+                                description: arglist[2], copyright: arglist[3] });
+            return;  // Don't let other things hide themselves
+          } else if (dialogs[1].displayed) {
+            dialogs[1].update({ displayed: false });
+          }
+          
+          if (command == "")
+            list.update({ displayed: true, selected: args });
+          else if (list.displayed)
+            list.update({ displayed: false });
+          
+          if (command == "loaded")
+            puzzle.update({ displayed: true });
+          else if (puzzle.displayed)
+            puzzle.update({ displayed: false });
+          
+          if (command == "about")
+            about.update({ displayed: true });
+          else if (about.displayed)
+            about.update({ displayed: false });
+        });
+        list.update({ displayed: true });
+        
+        riot.loadPuzzle = function (url, fn, resetStack) {
+          if (resetStack && window.location.href.split("#")[1]) {
+            window.onpopstate = function (event) {
+              riot.loadPuzzle(url, fn, resetStack);
+            }
+            window.history.back();
+          } else {
+            window.onpopstate = null;
+            puzzle.loadURL(url, fn);
+          }
+        }
+        
+        window.onload = function () {
+          var hub = null;
+          riot.system = null;
+          try {
+            hub = external.getUnityObject(1.0).ContentHub;
+          } catch (error) {
+            // Not on Ubuntu Touch
+          }
+          if (hub) {
+            function getItemUrl(items) {
+              riot.loadPuzzle(items[0].url, null, true);
+            }
+            function incoming(transfer) {
+              transfer.items(getItemUrl);
+            }
+            hub.onImportRequested(incoming);
+            hub.onShareRequested(incoming);
+            riot.system = "Ubuntu Touch";
+          }
+          if (window.webintent) {
+            function onIntent(uri) {
+              if (uri)
+                riot.loadPuzzle(uri, null, true);
+            }
+            window.webintent.getUri(onIntent);
+            window.webintent.onNewIntent(onIntent);
+            riot.system = "Android";
+          }
+        }
+    </script>
+
+  </body>
+</html>

@@ -1,0 +1,52 @@
+/* Copyright 2014-2015 Robert Schroll
+ *
+ * This file is part of Crosswords and is distributed under the terms
+ * of the GPL. See the file LICENSE for full details.
+ */
+
+body {
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    cursor: default;
+}
+
+#focuser {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 1px;
+    width: 1px;
+}
+#focuser-hide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 1rem;
+    width: 1rem;
+    background: #ededed;
+}
+
+#drag-accept {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    z-index: 200;
+}
+body.dnd #drag-accept {
+    display: block;
+}
+#drag-accept span {
+    position: absolute;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    transform: translateY(-50%);
+    width: 100%;
+    font-size: 200%;
+    font-weight: bold;
+    text-align: center;
+}

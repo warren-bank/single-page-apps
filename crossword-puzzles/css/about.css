@@ -1,0 +1,43 @@
+/* Copyright 2015 Robert Schroll
+ *
+ * This file is part of Crosswords and is distributed under the terms
+ * of the GPL. See the file LICENSE for full details.
+ */
+
+about-page {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+about-page > div {
+    position: absolute;
+    top: 76px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: auto;
+    padding: 16px;
+    margin: 0 auto;
+    max-width: 35rem;
+}
+
+about-page p {
+    margin: 0.5em 0;
+}
+
+/* Used for keyboard keys */
+about-page b {
+    font-family: monospace;
+    font-weight: normal;
+    background: #dddddd;
+    padding: 0px 3px;
+    border: 1px solid #787878;
+    border-radius: 3px;
+}
+
+about-page > div img {
+    height: 1em;
+}
