@@ -118,21 +118,21 @@ ul {
  * ---------------------------------- */
 /* Workarround to load the Ubuntu Light font pad.lv/1186372 */
 @font-face {
-  font-family: 'Ubuntu';
+  font-family: "Ubuntu";
   font-style: normal;
   font-weight: 300;
-  src: local("Ubuntu Light"), local("Ubuntu-Light"), url(ubuntu-light.woff) format("woff");
+  src: local("Ubuntu Light"), local("Ubuntu-Light");
 }
 
 body {
   background: #ededed;
-  font-family: "Ubuntu";
+  font-family: "Ubuntu", "Open Sans", sans-serif;
   font-weight: normal;
   color: #787878;
 }
 
 p {
-  font: 0.9rem "Ubuntu";
+  font: 0.9rem "Ubuntu", "Open Sans", sans-serif;
   color: #787878;
   line-height: 1.33;
 }
@@ -141,7 +141,7 @@ h1,
 h2,
 h3 {
   color: #747278;
-  font: 1.3rem "Ubuntu";
+  font: 1.3rem "Ubuntu", "Open Sans", sans-serif;
   font-weight: 300;
   line-height: 1.5;
 }
@@ -202,7 +202,7 @@ button.back:active {
 }
 
 header.page h1 {
-  font-family: "Ubuntu";
+  font-family: "Ubuntu", "Open Sans", sans-serif;
   font-size: x-large;
   font-weight: 300;
   text-decoration: none;
@@ -357,7 +357,7 @@ button {
   border: 2px solid #dd4814;
   border-radius: 6px;
   color: white;
-  font-family: "Ubuntu";
+  font-family: "Ubuntu", "Open Sans", sans-serif;
   font-size: 1rem;
   padding: 9px 25px;
   text-align: center;
