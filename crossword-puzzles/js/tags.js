@@ -28,7 +28,7 @@ riot.tag('overlay-dialog', '<div> <h1>{ title }</h1> <div> <yield></yield> </div
  * This file is part of Crosswords and is distributed under the terms
  * of the GPL. See the file LICENSE for full details.
  */
-riot.tag('list-page', '<header class="page"> <h1>Puzzles</h1> <ul class="actions"> <li if="{ deleteMode }" onclick="{ disableDelete }"> <img src="img/cancel.svg" alt="Cancel" title="Cancel"> <span>Delete</span> </li> <li if="{ deleteMode }" onclick="{ deletePuzzles }"> <img src="img/delete-red.svg" alt="Delete" title="Delete"> <span>Delete</span> </li> <li onclick="{ enableDelete }" if="{ !deleteMode && puzzles.length && (selected == \'Empty\' || selected == \'In Progress\' || selected == \'Completed\') }"> <img src="img/delete.svg" alt="Delete" title="Delete"> <span>Delete</span> </li> <li if="{ !deleteMode }" onclick="{ about }"> <img src="img/info.svg" alt="About" title="About"> <span>About</span> </li> </ul> </header> <section id="sources" class="{ list: true, deleteMode: deleteMode }"> <ul> <li each="{ urlGens }" class="{ selected: parent.selected == title }" onclick="{ parent.setPuzzles }"> { title } <span if="{ parent.deleteMode && parent.selected == title }"> <input type="checkbox" onclick="{ parent.setPuzzlesInput }"> </span> </li> <li onclick="{ getFile }">Import File</li> </ul> <input type="file" id="fileinput" onchange="{ loadFile }"> </section> <section id="dates" class="{ list: true, deleteMode: deleteMode }" show="{ selected }"> <ul> <li each="{ puzzles }" onclick="{ parent.clickPuzzle }">{ title } <span if="{ !parent.deleteMode && completion > 0 }">{ (completion*100).toFixed(0) + "%" }</span> <span if="{ parent.deleteMode }"> <input type="checkbox" url="{ url }" onclick="{ parent.clickPuzzleInput }"> </span> </li> <div id="dates-notes" show="{ puzzles.length == 0 }"> <span>{ note }</span> </div> </ul> </section>', function(opts) {
+riot.tag('list-page', '<header class="page"> <h1>Puzzles</h1> <ul class="actions"> <li if="{ deleteMode }" onclick="{ disableDelete }"> <img src="img/cancel.svg" alt="Cancel" title="Cancel"> <span>Delete</span> </li> <li if="{ deleteMode }" onclick="{ deletePuzzles }"> <img src="img/delete-red.svg" alt="Delete" title="Delete"> <span>Delete</span> </li> <li onclick="{ enableDelete }" if="{ !deleteMode && puzzles.length && (selected == \'Empty\' || selected == \'In Progress\' || selected == \'Completed\') }"> <img src="img/delete.svg" alt="Delete" title="Delete"> <span>Delete</span> </li> <li if="{ !deleteMode }" onclick="{ decreaseFontSize }"> <img src="img/font-size-decrease.svg" alt="Smaller Font" title="Smaller Font"> <span>Smaller Font</span> </li> <li if="{ !deleteMode }" onclick="{ increaseFontSize }"> <img src="img/font-size-increase.svg" alt="Larger Font" title="Larger Font"> <span>Larger Font</span> </li> <li if="{ !deleteMode }" onclick="{ about }"> <img src="img/info.svg" alt="About" title="About"> <span>About</span> </li> </ul> </header> <section id="sources" class="{ list: true, deleteMode: deleteMode }"> <ul> <li each="{ urlGens }" class="{ selected: parent.selected == title }" onclick="{ parent.setPuzzles }"> { title } <span if="{ parent.deleteMode && parent.selected == title }"> <input type="checkbox" onclick="{ parent.setPuzzlesInput }"> </span> </li> <li onclick="{ getFile }">Import File</li> </ul> <input type="file" id="fileinput" onchange="{ loadFile }"> </section> <section id="dates" class="{ list: true, deleteMode: deleteMode }" show="{ selected }"> <ul> <li each="{ puzzles }" onclick="{ parent.clickPuzzle }">{ title } <span if="{ !parent.deleteMode && completion > 0 }">{ (completion*100).toFixed(0) + "%" }</span> <span if="{ parent.deleteMode }"> <input type="checkbox" url="{ url }" onclick="{ parent.clickPuzzleInput }"> </span> </li> <div id="dates-notes" show="{ puzzles.length == 0 }"> <span>{ note }</span> </div> </ul> </section>', function(opts) {
         var self = this;
         self.mixin("display");
 
@@ -200,6 +200,28 @@ riot.tag('list-page', '<header class="page"> <h1>Puzzles</h1> <ul class="actions
             input.checked = checked && !unchecked;
         }.bind(this);
 
+        this.decreaseFontSize = function(event) {
+            event.preventUpdate = true;
+            var newFontSize = self.calculateFontSize(-2)
+            document.documentElement.style.fontSize = newFontSize + 'px'
+        }
+
+        this.increaseFontSize = function(event) {
+            event.preventUpdate = true;
+            var newFontSize = self.calculateFontSize(2)
+            document.documentElement.style.fontSize = newFontSize + 'px'
+        }
+
+        this.calculateFontSize = function(change, defaultFontSize = 16, minFontSize = 4) {
+            var oldFontSize = parseInt(document.documentElement.style.fontSize, 10)
+            if (isNaN(oldFontSize) || (oldFontSize <= 0))
+              oldFontSize = defaultFontSize
+            var newFontSize = oldFontSize + change
+            if (newFontSize < minFontSize)
+              newFontSize = minFontSize
+            return newFontSize
+        }
+
         this.about = function(event) {
             event.preventUpdate = true;
             riot.route("about");
@@ -284,7 +306,7 @@ riot.tag('list-page', '<header class="page"> <h1>Puzzles</h1> <ul class="actions
  * This file is part of Crosswords and is distributed under the terms
  * of the GPL. See the file LICENSE for full details.
  */
-riot.tag('puzzle-page', '<header class="page collapsed"> <button class="back" onclick="{ back }" title="Back"></button> <h1>{ puzzle.metadata.title }</h1> <ul class="actions"> <li onclick="{ solve }" show="{ !puzzle.noSolution }"> <img src="img/compose.svg" alt="Solve" title="Solve"> <span>Solve</span> </li> <li onclick="{ check }" show="{ !puzzle.noSolution }"> <img src="img/tick@30.png" alt="Check" title="Check"> <span>Check</span> </li> <li onclick="{ reveal }" show="{ !puzzle.noSolution }"> <img src="img/reveal.svg" alt="Reveal" title="Reveal"> <span>Reveal</span> </li> <li onclick="{ info }"> <img src="img/info.svg" alt="Info" title="Info"> <span>Info</span> </li> <li class="menu" onclick="{ collapse }"> <img src="img/navigation-menu.svg" alt="Menu" title="Menu"> <span>Menu</span> </li> </ul> </header> <div id="gridcontainer"> <table id="grid" class="{ solved: completion == 1 }"> <tr each="{ row, i in puzzle.grid }"><td each="{ cell, j in row }" class="{ parent.parent.gridClass(cell) }" id="{ \'r\' + i + \'c\' + j }"><span class="number" if="{ cell.number }">{ cell.number }</span><span class="letter">{ parent.parent.fill[i][j] }</span></td></tr> </table> <div id="Vscroll"></div> <div id="Hscroll"></div> </div> <section id="across" class="clues list"> <header>Across</header> <ul> <li each="{ enumerate(puzzle.across) }" id="{ \'across\' + n }" onclick="{ parent.clickClue(\'across\', n) }"> { n + ". " + clue } </li> </ul> </section> <section id="down" class="clues list"> <header>Down</header> <ul> <li each="{ enumerate(puzzle.down) }" id="{ \'down\' + n }" onclick="{ parent.clickClue(\'down\', n) }"> { n + ". " + clue } </li> </ul> </section>', function(opts) {
+riot.tag('puzzle-page', '<header class="page collapsed"> <button class="back" onclick="{ back }" title="Back"></button> <h1>{ puzzle.metadata.title }</h1> <ul class="actions"> <li onclick="{ solve }" show="{ !puzzle.noSolution }"> <img src="img/compose.svg" alt="Solve" title="Solve"> <span>Solve</span> </li> <li onclick="{ check }" show="{ !puzzle.noSolution }"> <img src="img/tick@30.png" alt="Check" title="Check"> <span>Check</span> </li> <li onclick="{ reveal }" show="{ !puzzle.noSolution }"> <img src="img/reveal.svg" alt="Reveal" title="Reveal"> <span>Reveal</span> </li> <li if="{ !deleteMode }" onclick="{ decreaseFontSize }"> <img src="img/font-size-decrease.svg" alt="Smaller Font" title="Smaller Font"> <span>Smaller Font</span> </li> <li if="{ !deleteMode }" onclick="{ increaseFontSize }"> <img src="img/font-size-increase.svg" alt="Larger Font" title="Larger Font"> <span>Larger Font</span> </li> <li onclick="{ info }"> <img src="img/info.svg" alt="Info" title="Info"> <span>Info</span> </li> <li class="menu" onclick="{ collapse }"> <img src="img/navigation-menu.svg" alt="Menu" title="Menu"> <span>Menu</span> </li> </ul> </header> <div id="gridcontainer"> <table id="grid" class="{ solved: completion == 1 }"> <tr each="{ row, i in puzzle.grid }"><td each="{ cell, j in row }" class="{ parent.parent.gridClass(cell) }" id="{ \'r\' + i + \'c\' + j }"><span class="number" if="{ cell.number }">{ cell.number }</span><span class="letter">{ parent.parent.fill[i][j] }</span></td></tr> </table> <div id="Vscroll"></div> <div id="Hscroll"></div> </div> <section id="across" class="clues list"> <header>Across</header> <ul> <li each="{ enumerate(puzzle.across) }" id="{ \'across\' + n }" onclick="{ parent.clickClue(\'across\', n) }"> { n + ". " + clue } </li> </ul> </section> <section id="down" class="clues list"> <header>Down</header> <ul> <li each="{ enumerate(puzzle.down) }" id="{ \'down\' + n }" onclick="{ parent.clickClue(\'down\', n) }"> { n + ". " + clue } </li> </ul> </section>', function(opts) {
         var self = this;
         self.mixin("display");
 
@@ -600,6 +622,30 @@ riot.tag('puzzle-page', '<header class="page collapsed"> <button class="back" on
             self.gridoffset = [ratio * self.startoffset[0] + ctr[0] * (1 - ratio),
                                ratio * self.startoffset[1] + ctr[1] * (1 - ratio)];
         }.bind(this);
+
+        this.decreaseFontSize = function(event) {
+            event.preventUpdate = true;
+            var newFontSize = self.calculateFontSize(-2)
+            document.documentElement.style.fontSize = newFontSize + 'px'
+            self.setGeometry()
+        }
+
+        this.increaseFontSize = function(event) {
+            event.preventUpdate = true;
+            var newFontSize = self.calculateFontSize(2)
+            document.documentElement.style.fontSize = newFontSize + 'px'
+            self.setGeometry()
+        }
+
+        this.calculateFontSize = function(change, defaultFontSize = 16, minFontSize = 4) {
+            var oldFontSize = parseInt(document.documentElement.style.fontSize, 10)
+            if (isNaN(oldFontSize) || (oldFontSize <= 0))
+              oldFontSize = defaultFontSize
+            var newFontSize = oldFontSize + change
+            if (newFontSize < minFontSize)
+              newFontSize = minFontSize
+            return newFontSize
+        }
 
         this.info = function(event) {
             event.preventUpdate = true;
