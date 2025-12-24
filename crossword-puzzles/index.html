@@ -126,7 +126,7 @@ of the GPL. See the file LICENSE for full details.
         }
         
         window.onload = function () {
-          var hub = null;
+          var hub = null, qs = null, url = null;
           riot.system = null;
           try {
             hub = external.getUnityObject(1.0).ContentHub;
@@ -152,6 +152,20 @@ of the GPL. See the file LICENSE for full details.
             window.webintent.getUri(onIntent);
             window.webintent.onNewIntent(onIntent);
             riot.system = "Android";
+          }
+          if (window.location.search && window.URLSearchParams) {
+            try {
+              qs = new window.URLSearchParams(window.location.search)
+              url = qs.get('puzzle')
+              if (url) {
+                // querystring value is base64 encoded
+                url = atob(url)
+                if (url && (url.substring(0, 4).toLowerCase() === 'http')) {
+                  riot.loadPuzzle(url, null, true)
+                }
+              }
+            }
+            catch(e) {}
           }
         }
     </script>
