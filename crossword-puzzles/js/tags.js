@@ -28,7 +28,7 @@ riot.tag('overlay-dialog', '<div> <h1>{ title }</h1> <div> <yield></yield> </div
  * This file is part of Crosswords and is distributed under the terms
  * of the GPL. See the file LICENSE for full details.
  */
-riot.tag('list-page', '<header class="page"> <h1>Puzzles</h1> <ul class="actions"> <li if="{ deleteMode }" onclick="{ disableDelete }"> <img src="img/cancel.svg" alt="Cancel" title="Cancel"> <span>Delete</span> </li> <li if="{ deleteMode }" onclick="{ deletePuzzles }"> <img src="img/delete-red.svg" alt="Delete" title="Delete"> <span>Delete</span> </li> <li onclick="{ enableDelete }" if="{ !deleteMode && puzzles.length && (selected == \'Empty\' || selected == \'In Progress\' || selected == \'Completed\') }"> <img src="img/delete.svg" alt="Delete" title="Delete"> <span>Delete</span> </li> <li if="{ !deleteMode }" onclick="{ decreaseFontSize }"> <img src="img/font-size-decrease.svg" alt="Smaller Font" title="Smaller Font"> <span>Smaller Font</span> </li> <li if="{ !deleteMode }" onclick="{ increaseFontSize }"> <img src="img/font-size-increase.svg" alt="Larger Font" title="Larger Font"> <span>Larger Font</span> </li> <li if="{ !deleteMode }" onclick="{ about }"> <img src="img/info.svg" alt="About" title="About"> <span>About</span> </li> </ul> </header> <section id="sources" class="{ list: true, deleteMode: deleteMode }"> <ul> <li each="{ urlGens }" class="{ selected: parent.selected == title }" onclick="{ parent.setPuzzles }"> { title } <span if="{ parent.deleteMode && parent.selected == title }"> <input type="checkbox" onclick="{ parent.setPuzzlesInput }"> </span> </li> <li onclick="{ getFile }">Import File</li> </ul> <input type="file" id="fileinput" onchange="{ loadFile }"> </section> <section id="dates" class="{ list: true, deleteMode: deleteMode }" show="{ selected }"> <ul> <li each="{ puzzles }" onclick="{ parent.clickPuzzle }">{ title } <span if="{ !parent.deleteMode && completion > 0 }">{ (completion*100).toFixed(0) + "%" }</span> <span if="{ parent.deleteMode }"> <input type="checkbox" url="{ url }" onclick="{ parent.clickPuzzleInput }"> </span> </li> <div id="dates-notes" show="{ puzzles.length == 0 }"> <span>{ note }</span> </div> </ul> </section>', function(opts) {
+riot.tag('list-page', '<header class="page"> <h1>Puzzles</h1> <ul class="actions"> <li if="{ deleteMode }" onclick="{ disableDelete }"> <img src="img/cancel.svg" alt="Cancel" title="Cancel"> <span>Delete</span> </li> <li if="{ deleteMode }" onclick="{ deletePuzzles }"> <img src="img/delete-red.svg" alt="Delete" title="Delete"> <span>Delete</span> </li> <li onclick="{ enableDelete }" if="{ !deleteMode && puzzles.length && (selected == \'Empty\' || selected == \'In Progress\' || selected == \'Completed\') }"> <img src="img/delete.svg" alt="Delete" title="Delete"> <span>Delete</span> </li> <li if="{ !deleteMode }" onclick="{ decreaseFontSize }"> <img src="img/font-size-decrease.svg" alt="Smaller Font" title="Smaller Font"> <span>Smaller Font</span> </li> <li if="{ !deleteMode }" onclick="{ increaseFontSize }"> <img src="img/font-size-increase.svg" alt="Larger Font" title="Larger Font"> <span>Larger Font</span> </li> <li if="{ !deleteMode }" onclick="{ about }"> <img src="img/info.svg" alt="About" title="About"> <span>About</span> </li> </ul> </header> <section id="sources" class="{ list: true, deleteMode: deleteMode }"> <ul> <li each="{ urlGens }" class="{ selected: parent.selected == title }" onclick="{ parent.setPuzzles }"> { title } <span if="{ parent.deleteMode && parent.selected == title }"> <input type="checkbox" onclick="{ parent.setPuzzlesInput }"> </span> </li> <li onclick="{ getFile }">Import File</li> <li onclick="{ getUrl }">Import URL</li> </ul> <input type="file" id="fileinput" onchange="{ loadFile }"> </section> <section id="dates" class="{ list: true, deleteMode: deleteMode }" show="{ selected }"> <ul> <li each="{ puzzles }" onclick="{ parent.clickPuzzle }">{ title } <span if="{ !parent.deleteMode && completion > 0 }">{ (completion*100).toFixed(0) + "%" }</span> <span if="{ parent.deleteMode }"> <input type="checkbox" url="{ url }" onclick="{ parent.clickPuzzleInput }"> </span> </li> <div id="dates-notes" show="{ puzzles.length == 0 }"> <span>{ note }</span> </div> </ul> </section>', function(opts) {
         var self = this;
         self.mixin("display");
 
@@ -204,13 +204,13 @@ riot.tag('list-page', '<header class="page"> <h1>Puzzles</h1> <ul class="actions
             event.preventUpdate = true;
             var newFontSize = self.calculateFontSize(-2)
             document.documentElement.style.fontSize = newFontSize + 'px'
-        }
+        }.bind(this);
 
         this.increaseFontSize = function(event) {
             event.preventUpdate = true;
             var newFontSize = self.calculateFontSize(2)
             document.documentElement.style.fontSize = newFontSize + 'px'
-        }
+        }.bind(this);
 
         this.calculateFontSize = function(change, defaultFontSize = 16, minFontSize = 4) {
             var oldFontSize = parseInt(document.documentElement.style.fontSize, 10)
@@ -220,7 +220,7 @@ riot.tag('list-page', '<header class="page"> <h1>Puzzles</h1> <ul class="actions
             if (newFontSize < minFontSize)
               newFontSize = minFontSize
             return newFontSize
-        }
+        }.bind(this);
 
         this.about = function(event) {
             event.preventUpdate = true;
@@ -258,6 +258,12 @@ riot.tag('list-page', '<header class="page"> <h1>Puzzles</h1> <ul class="actions
             self.note = "";
             self.selected = null;
             self.deleteMode = false;
+        }.bind(this);
+
+        this.getUrl = function(event) {
+            var url = window.prompt('URL:')
+            if (url && (url.substring(0, 4).toLowerCase() === 'http'))
+                riot.loadPuzzle(url);
         }.bind(this);
 
         this.loadFile = function(event) {
@@ -628,14 +634,14 @@ riot.tag('puzzle-page', '<header class="page collapsed"> <button class="back" on
             var newFontSize = self.calculateFontSize(-2)
             document.documentElement.style.fontSize = newFontSize + 'px'
             self.setGeometry()
-        }
+        }.bind(this);
 
         this.increaseFontSize = function(event) {
             event.preventUpdate = true;
             var newFontSize = self.calculateFontSize(2)
             document.documentElement.style.fontSize = newFontSize + 'px'
             self.setGeometry()
-        }
+        }.bind(this);
 
         this.calculateFontSize = function(change, defaultFontSize = 16, minFontSize = 4) {
             var oldFontSize = parseInt(document.documentElement.style.fontSize, 10)
@@ -645,7 +651,7 @@ riot.tag('puzzle-page', '<header class="page collapsed"> <button class="back" on
             if (newFontSize < minFontSize)
               newFontSize = minFontSize
             return newFontSize
-        }
+        }.bind(this);
 
         this.info = function(event) {
             event.preventUpdate = true;
