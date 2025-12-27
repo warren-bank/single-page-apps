@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Internet Archive: NYT Crossword Puzzles
 // @description  Add a small "pencil" icon to the left of all AcrossLite (.puz) files, which opens the crossword puzzle file in an online viewer in a new browser tab.
-// @version      1.0.0
+// @version      1.1.0
 // @match        *://archive.org/download/nyt-puz/*
 // @icon         https://github.com/rschroll/crosswords/raw/master/crosswords.png
 // @run-at       document-idle
@@ -9,6 +9,7 @@
 // @supportURL   https://github.com/warren-bank/single-page-apps/issues
 // @downloadURL  https://github.com/warren-bank/single-page-apps/raw/userscripts/crossword-puzzles/Internet-Archive-NYT-crossword-puzzles.user.js
 // @updateURL    https://github.com/warren-bank/single-page-apps/raw/userscripts/crossword-puzzles/Internet-Archive-NYT-crossword-puzzles.user.js
+// @require      ./lib/common.js
 // @namespace    warren-bank
 // @author       Warren Bank
 // @copyright    Warren Bank
@@ -36,9 +37,7 @@ var user_options = {
     $td = $a.parentElement
 
     url = $a.href
-    if (user_options.cors_proxy_url_prefix)
-      url = user_options.cors_proxy_url_prefix + url
-    url = user_options.crosswords_url + '?puzzle=' + btoa(url)
+    url = get_anchor_url(user_options, url)
 
     new_$a = unsafeWindow.document.createElement('a')
     new_$a.setAttribute('target', '_blank')
