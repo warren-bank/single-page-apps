@@ -112,8 +112,27 @@ of the GPL. See the file LICENSE for full details.
             about.update({ displayed: false });
         });
         list.update({ displayed: true });
+
+        riot.derivePuzzleFnRegexs = {
+          gdn: /https?:\/\/(?:[^\.]*\.)*theguardian\.com\/crosswords\/(?:(?:quick|cryptic|prize|quick-cryptic|quiptic|sunday-quick|speedy|everyman|weekend|mini)\/\d+|\d{4}\/[a-z]{3}\/\d{1,2}\/(?:azed|genius)-crossword(-no)?-\d+)$/
+        }
+
+        riot.derivePuzzleFn = function(url) {
+          var regexKeys = Object.keys(riot.derivePuzzleFnRegexs)
+          var fn, regex
+          for (var i=0; i < regexKeys.length; i++) {
+            fn = regexKeys[i]
+            regex = riot.derivePuzzleFnRegexs[fn]
+            if (regex.test(url))
+              return fn
+          }
+          return null
+        }
         
         riot.loadPuzzle = function (url, fn, resetStack) {
+          if (!fn) {
+            fn = riot.derivePuzzleFn(url)
+          }
           if (resetStack && window.location.href.split("#")[1]) {
             window.onpopstate = function (event) {
               riot.loadPuzzle(url, fn, resetStack);
@@ -161,7 +180,7 @@ of the GPL. See the file LICENSE for full details.
                 // querystring value is base64 encoded
                 url = atob(url)
                 if (url && (url.substring(0, 4).toLowerCase() === 'http')) {
-                  riot.loadPuzzle(url, null, true)
+                  riot.loadPuzzle(url)
                 }
               }
             }

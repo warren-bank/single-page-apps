@@ -471,8 +471,9 @@ function GuardiantoJSON(str) {
     var parser = new DOMParser();
     try {
         var doc = parser.parseFromString(str, "text/html");
-        var json = JSON.parse(doc.querySelector("div[data-crossword-data]")
-                              .getAttribute("data-crossword-data"));
+        var json = JSON.parse(
+            doc.querySelector('gu-island[name="CrosswordComponent"][props]').getAttribute('props')
+        ).data;
     } catch (error) {
         return "Could not find crossword puzzle on page.";
     }
