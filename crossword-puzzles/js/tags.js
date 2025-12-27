@@ -110,6 +110,12 @@ riot.tag('list-page', '<header class="page"> <h1>Puzzles</h1> <ul class="actions
                             "https://herbach.dnsalias.com/uc/uc" +
                             sixDigitDate(date) + ".puz";
                 })},
+            { title: "Newsday",
+                func: lastTwoWeeks(function (date) {
+                    return "https://cors-crossword-puzzles.warren-bank.workers.dev/" +
+                            "https://www.brainsonly.com/servlets-newsday-crossword/newsdaycrossword?date=" +
+                            sixDigitDate(date) + "&fmt=nwd";  // fmt only to help our format detection
+                })},
             { title: "Jonesin'",
                 func: weekly(function (date) {
                     return "https://cors-crossword-puzzles.warren-bank.workers.dev/" +
