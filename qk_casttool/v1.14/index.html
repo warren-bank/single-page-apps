@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>QK CastTool</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta property="og:title" content="Copyright (c) 2024-25  GT-tronics"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css" integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/grids-responsive-min.css" />
+  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<script type="application/javascript">
+//
+// Set up paramters
+//
+let deviceFilters = [
+  { vendorId: 0x0a12, productId: 0x4006, usagePage: 0xff00 },  // ignore usage 0x02 due to incorrect descriptor
+// { vendorId: 0x0a12, productId: 0x4007, usagePage: 0xff00 },  // ignore usage 0x02 due to incorrect descriptor
+// { vendorId: 0x0a12, productId: 0x4008, usagePage: 0xff00 },  // ignore usage 0x02 due to incorrect descriptor
+];
+let excludeFilters = [{ usagePage: 0x000b }, { usagePage: 0x000c }];
+let outputReportIdATCmd = 0x28;
+let outputReportIdRaw = 0x20;
+let maxHIDBufferSize = 255;
+let verboselog = false;
+let activitytrack = 'wix';
+</script>
+
+<!-- Dx Functions Implementation - 20251126 -->
+<script type="application/javascript">
+async function DxDevInfo(e){let t=getNewLogs();if(await setCmd("AT+VS?"),!await connectAndSend())return;await waitForOK(5e3),await setCmd("AT+NM?"),await connectAndSend(),await setCmd("AT+PDL?"),await connectAndSend(),await waitForOK(500),await waitFor(100);let n=e&&await DxBcastPSCList(255);return new Promise(((e,a)=>{let i=getNewLogs(t),r=i.match(/\+VS\:([^<|]+)<br>/g),o=i.match(/\+NM\:([^<|]+)<br>/g),s=i.match(/\+PDL\:([^<|]+)<br>/g),c=r&&r[0].replace(/<br>/,"").replace(/\+VS\:/,"").split(","),l=o&&o[0].replace(/<br>/,"").replace(/\+NM\:/,"").split(",");if(!(r&&o&&s&&c&&l))return console.log("(0x9104) Unable to get Dx Device Info",i),void e(null);let d=[],u=[];for(let e=0;s&&e<s.length;e++){let t=s[e].replace(/<br>/,"").replace(/\+PDL\:/,"").split(","),n=t&&t[1]&&t[1].replace(/\:/g,"")==l[2];t&&"-1"!=t[0]&&!n&&(d[t[0]]=t,d[t[0]].shift())}for(let e=0;e<d.length;e++)d[e]&&u.push(d[e].slice());let w={hw:c[0],fw:c[1],type:l[0],model:l[1],sn:l[2],mfg:l[3],pdl:u,psc:n};console.log("Device Info",w),e(w)}))}async function DxDSInfo(){let e=getNewLogs();if(await setCmd("AT+DS?"),await connectAndSend())return await waitForOK(500),await waitFor(100),new Promise(((t,n)=>{let a=getNewLogs(e),i=a.match(/\+DS\:([^<|]+)<br>/g),r=i&&i[0].replace(/<br>/,"").replace(/\+DS\:/,"").split(",");if(!i||!r)return console.log("(0x9106) Unable to get Dx Device State Info",a),void t(null);let o=r[0].match(/0x/)?16:10,s=r[1].match(/0x/)?16:10,c=r[1].match(/0x/)?16:10,l={app:isNaN(parseInt(r[0],o))?null:parseInt(r[0],o),system:isNaN(parseInt(r[1],s))?null:parseInt(r[1],s),uicontext:isNaN(parseInt(r[2],c))?null:parseInt(r[2],c)};console.log("Device State Info",l),t(l)}))}async function DxVLDGInfo(){let e=getNewLogs();if(await setCmd("AT+DG?"),await connectAndSend())return await waitForOK(5e3),await setCmd("AT+VL?"),await connectAndSend(),await waitFor(500),new Promise(((t,n)=>{let a=getNewLogs(e),i=a.match(/\+DG\:([^<|]+)<br>/g),r=a.match(/\+VL\:([^<|]+)<br>/g);if(!i)return console.log("(0x9114) Unable to get DG",a),void t(null);!r&&console.log("(0x9116) Unable to get VL");let o={},s=i[0].replace(/<br>/,"").replace(/\+DG\:/,"").split(","),c=r?r[0].replace(/<br>/,"").replace(/\+VL\:/,"").split(","):[];o.leftgain=isNaN(parseInt(s[0]))?null:parseInt(s[0]),o.rightgain=isNaN(parseInt(s[1]))?null:parseInt(s[1]),o.maingain=isNaN(parseInt(s[2]))?null:parseInt(s[2]),o.sqoffset=isNaN(parseInt(s[3]))?null:parseInt(s[3]),o.vl=isNaN(parseInt(c[1]))?null:parseInt(c[1]),console.log("volume and gain settings",o),t(o)}))}async function DxSetDG(e){let t=await DxVLDGInfo();if(!t)return;let n=(e.leftgain||t.leftgain)+","+(e.rightgain||t.rightgain)+","+(e.maingain||t.maingain)+","+(e.sqoffset||t.sqoffset)+",1";return await setCmd("AT+DG="+n),await connectAndSend(),await waitForOK(500)}async function DxDNInfo(){let e=getNewLogs();if(await setCmd("AT+DN?"),await connectAndSend())return await waitForOK(5e3),await setCmd("AT+DNO?"),await connectAndSend(),await waitFor(100),new Promise(((t,n)=>{let a=getNewLogs(e),i=a.match(/\+DN\:([^<|]+)<br>/g),r=a.match(/\+DNO\:([^<|]+)<br>/g),o=i&&i[0].replace(/<br>/,"").replace(/\+DN\:/,"").split(","),s=r&&r[0].replace(/<br>/,"").replace(/\+DNO\:/,"").split(",");if(!i||!o)return console.log("(0x9312) Unable to get Dx Device Name Info",a),void t(null);let c={};c.dnchangeable=isNaN(parseInt(o[0]))?null:parseInt(o[0]),c.dn=o?1==o.length?o[0]:o[1]:"",c.dno=s&&s[0],console.log("Device Name Info",c),t(c)}))}async function DxSetDN(e){let t=await DxDNInfo();if(t){if(!(t.dnchangeable<1))return await setCmd("AT+DN="+e),await connectAndSend(),await waitForOK(500);console.log("Dx Device Name Unchangeable")}}async function DxRemovePDL(e){if(254,await setCmd("AT+PDLR=254"),await connectAndSend())return await waitFor(1e3),1}async function DxSystemReset(){if(await setCmd("AT+RST"),await connectAndSend())return await waitFor(1e3),1}async function DxPowerDown(){if(await setCmd("AT+PWR=0"),await connectAndSend())return await waitFor(3e3),1}async function DxPowerUp(){let e=await DxDSInfo();if(!e)return;let t=e.system;return 4!=t&&8!=t&&16!=t&&64!=t&&256!=t&&512!=t&&2048!=t&&4096!=t||(await waitFor(1e3),e=await DxDSInfo(),t=e.system),2==t||1024==t?-t:32==t?(await setCmd("AT+PWR=1"),await connectAndSend(),await waitFor(3e3),1):128==t?t:void 0}async function DxBcastScanSource(e,t){!e&&(e={}),e.rssi&&(e.rssi=isNaN(parseInt(e.rssi))?20:parseInt(e.rssi)),!t&&(t=5e3);let n=e.bid||"0",a=getNewLogs();if(await setCmd("AT+BRSS="+n+","+t),!await connectAndSend())return;await waitFor(t+500);let i=getNewLogs(a).match(/\+BRSR\:([^<|]+)<br>/g),r=[],o=-1,s=-1,c=-999;if(i){for(let t=0;t<i.length;t++){if(i[t].match(/\:\-1/))continue;let n=i[t].replace(/<br>/,"").replace(/\+BRSR\:/,"").split(",");o++,r[o]={},r[o].rssi=isNaN(parseInt(n[3]))?null:parseInt(n[3]),r[o].aid=isNaN(parseInt(n[2]),16)?null:parseInt(n[2],16),r[o].bdaddr=n[0],r[o].bid=isNaN(parseInt(n[1]),16)?null:parseInt(n[1],16),r[o].painterval=isNaN(parseInt(n[4]))?null:parseInt(n[4]),r[o].bcastname=n[5]&&n[5].length>0?n[5]:null,r[o].encrypt=!1,r[o].bcastcode="",e.rssi&&r[o].rssi<e.rssi||(e.aid&&!r[o].aid.match(e.aid)||e.bdaddr&&!r[o].bdaddr.match(e.bdaddr)||e.bcastname&&!r[o].bcastname.match("^"+e.bcastname+"$")||r[o].rssi>c&&(c=r[o].rssi,s=o))}return console.log("found broadcasts",r),console.log("highest rssi array offset: "+s+"; rssi: "+c),{result:r,highestrssi:s}}console.log("no broadcast scan result returned")}async function DxBcastAddToConfigByName(e,t){const n=e.encrypt?e.bcastcode:null;let a=-1,i=null,r=null,o=getNewLogs();await setCmd("AT+BRCB="+e.bcastname),await connectAndSend(),await waitForOK(500);let s=getNewLogs(o),c=s.match(/\+BRCB\:([0-9]),([^<|]+)<br>/);if(c&&(a=isNaN(parseInt(c[1]))?null:parseInt(c[1]),i=c[2]),a<0){if(c=s.match(/\ERR=(\d+)/),c)return r=isNaN(parseInt(c[1]))?65535:parseInt(c[1]),console.log("ERR code",r),void resolve(-r);let e=s.substring(s.indexOf("&gt;&gt; ")+9,s.indexOf("<br>"));return console.log("(0x9349) Unrecognized +BRCB",e,s),void resolve(a)}return n&&(await setCmd("AT+BRCC="+a+","+n),await connectAndSend(),await waitForOK(500)),t&&(await waitFor(3101),await setCmd("AT+BRPS="+a),await connectAndSend()),await waitFor(3101),new Promise(((e,t)=>{console.log("added broadcast source config by name - idx:"+a+" bcastname:"+i),e(a)}))}async function DxBcastAddToConfigById(e,t){const n=e.encrypt?","+e.bcastcode:"";t=t?1:0;let a=-1,i=null,r=null,o=null,s=getNewLogs();return await setCmd("AT+BRCA="+e.aid+","+e.bid+","+t+n),await connectAndSend(),e.bcastname&&(await waitForOK(500),await setCmd("AT+BRCN="+e.aid+","+e.bid+","+e.bcastname),await connectAndSend()),await waitFor(3101),new Promise(((e,t)=>{let n=getNewLogs(s),c=n.match(/\+BRCA\:([0-9]),([0-9]{1,3}),([0-9]{1,8})/);if(c&&(a=isNaN(parseInt(c[1]))?null:parseInt(c[1]),i=isNaN(parseInt(c[2]))?null:parseInt(c[2]),r=isNaN(parseInt(c[3]))?null:parseInt(c[3])),a<0){if(c=n.match(/\ERR=(\d+)/),c)return o=isNaN(parseInt(c[1]))?65535:parseInt(c[1]),console.log("ERR code",o),void e(-o);let t=n.substring(n.indexOf("&gt;&gt; ")+9,n.indexOf("<br>"));return console.log("(0x9339) Unrecognized +BRCA",t,n),void e(a)}console.log("added broadcast source config by id - idx:"+a+" aid:"+i+" bid:"+r),e(a)}))}async function DxBcastAddSource(e,t,n){let a=null,i=t,r=t;if(e.bcastname&&e.bcastname.match(/Control for SA0190/i))return console.log("PD Bug Hack needed for "+e.bcastname),a=await DxBcastAddSourceWithPDBugHack(e,r),!a||a<1?(alert("(0x9334) Unable to join stream with PD Hack."+(a?" Error "+-a:"")),{retcode:a,details:null}):{retcode:a,details:{handle:a}};let o=e.bid?await DxBcastAddToConfigById(e,i):await DxBcastAddToConfigByName(e,i);if(o<0)return console.log("(0x9330) BRCA Error "+-o),{retcode:o,details:null};a=1;let s=await DxBcastGetStreamDetails(a),c=null;if(s&&s.is_encrypted&&!e.encrypt?(console.log("stream is encrypted but bcastcode not provided",e),"function"==typeof n&&(c=await n(e),e=Object.assign({},e,c)),await DxBcastReSyncToBIS(a,e,0),await waitFor(3500),s=await DxBcastGetStreamDetails(a)):console.log("no need to resync "+(s&&s.is_encrypted?"encrypted ":"")+"BIS"),!s||s.sample_rate<1){if(e.retry&&(console.log("(0x9332) unable to get stream details and will retry in 8s"),await waitFor(8e3),console.log("retry to get stream details"),s=await DxBcastGetStreamDetails(a)),!s)return console.log("(0x9336) Unable to join broadcast with stream details"),{retcode:-9336,details:null};if(s.sample_rate<1)return console.log("(0x9338) Unable to find broadcast"),{retcode:-9338,details:s}}return 4==s.encrypt||2==s.encrypt&&s.streaming<1?(console.log("(0x9333) Unable to join broadcast due to wrong passcode"),{retcode:-9333,details:s}):(s&&s.sample_rate>0&&(console.log("joined broadcast with stream details",s),c&&(console.log("preparing to save broadcast code: ",e.bcastcode),await setCmd("AT+BRCC="+o+","+e.bcastcode),await connectAndSend(),await waitForOK(500))),{retcode:s.sid,details:s})}async function DxBcastGetStreamDetails(e){let t=getNewLogs();return await setCmd("AT+BRSD="+e),await connectAndSend(),await waitForOK(500),await setCmd("AT+BRSE="+e),await connectAndSend(),await waitForOK(500),await waitFor(100),new Promise(((n,a)=>{let i=getNewLogs(t),r=i.match(/\ERR=([^<|]+)<br>/g);if(r)return console.log("stream not exist for sid "+e),void n(null);let o=i.match(/\+BRSD\:\-1<br>/g,"");if(i=i.replace(/\+BRSD\:\-1<br>/g,""),r=i.match(/\+BRSD\:([^<|]+)<br>/g),!r&&o)return console.log("stream details not found"),void n(null);if(!r)return console.log("(0x9342) Unrecognized +BRSD for sid "+e,i),void n(null);let s={},c=r[0].replace(/<br>/,"").replace(/\+BRSD\:/,"").split(",");if(s.sid=isNaN(parseInt(c[0]))?null:parseInt(c[0]),s.pa_sync_state=isNaN(parseInt(c[1]))?null:parseInt(c[1]),s.is_encrypted=isNaN(parseInt(c[2]))?null:parseInt(c[2]),s.is_pa_sync_lost=isNaN(parseInt(c[3]))?null:parseInt(c[3]),s.presentation_delay=isNaN(parseInt(c[4]))?null:parseInt(c[4]),s.num_subgroups=isNaN(parseInt(c[5]))?null:parseInt(c[5]),s.iso_interval=isNaN(parseInt(c[6]))?null:parseInt(c[6]),s.context=isNaN(parseInt(c[7]),16)?null:parseInt(c[7],16),s.sample_rate=isNaN(parseInt(c[8]))?null:parseInt(c[8]),s.frame_duration=isNaN(parseInt(c[9]))?null:parseInt(c[9]),s.octets_per_frame=isNaN(parseInt(c[10]))?null:parseInt(c[10]),s.codec_frame_blocks_per_sdu=isNaN(parseInt(c[11]))?null:parseInt(c[11]),i=i.replace(/\+BRSE\:\-1<br>/g,""),r=i.match(/\+BRSE\:([^<|]+)<br>/g),!r)return console.log("(0x9344) Unrecognized +BRSE for sid "+e,i),void n(null);c=r[0].replace(/<br>/,"").replace(/\,\-/,"").replace(/\+BRSE\:/,"").split(","),s.idx=isNaN(parseInt(c[1]))?null:parseInt(c[1]),s.aid=isNaN(parseInt(c[2]))?null:parseInt(c[2]),s.bid=isNaN(parseInt(c[3]))?null:parseInt(c[3]),s.connect=isNaN(parseInt(c[4]))?null:parseInt(c[4]),s.encrypt=isNaN(parseInt(c[5]))?null:parseInt(c[5]),s.streaming=isNaN(parseInt(c[6]))?null:parseInt(c[6]),console.log("stream details for sid "+e,s),n(s)}))}async function DxBcastStartStopStream(e){if(!((e=parseInt(e))<-2||e>4)&&(await setCmd("AT+BRPS="+e),await connectAndSend()))return!0}async function DxBcastForceStopAllStream(){for(let e=0;e<3;e++)await setCmd("AT+BRSM="+e+",0"),await connectAndSend(),await waitForOK(500),await setCmd("AT+BRSR="+e),await connectAndSend(),await waitForOK(500)}async function DxBcastSwitchStream(e,t){await setCmd("AT+BRSM="+e+",0"),await connectAndSend(),await waitForOK(500),await setCmd("AT+BRSM="+t+",1"),await connectAndSend(),await waitForOK(500)}async function DxBcastSyncToStream(e,t,n,a){const i=e.encrypt?","+e.bcastcode:"";t=t?1:0,a=a?1:0,0==(n=n?1:0)&&(t=1);let r=t<1?0:300,o=n<1?0:1800,s=null,c=null,l=getNewLogs();return await setCmd("AT+BRSA="+e.aid+","+e.bid+","+t+","+n+","+a+i),await connectAndSend(),await waitFor(1+r+o),new Promise(((e,t)=>{let n=getNewLogs(l),a=n.match(/\+BRSA\:(\d?)/);if(a&&(s=isNaN(parseInt(a[1]))?null:parseInt(a[1])),null===s){if(a=n.match(/\ERR=(\d+)/),a)return c=isNaN(parseInt(a[1]))?65535:parseInt(a[1]),console.log("ERR code",c),void e(-c);let t=n.substring(n.indexOf("&gt;&gt; ")+9,n.indexOf("<br>"));return console.log("(0x9330) Unrecognized +BRSA",t),void e(s)}console.log("joined broadcast source idx",s),e(s)}))}async function DxBcastUnsyncFromBIS(e){await setCmd("AT+BRSM="+e+",1,0"),await connectAndSend(),await waitForOK(500)}async function DxBcastReSyncToBIS(e,t,n){const a=t.encrypt?","+t.bcastcode:"";n=n?1:0,await setCmd("AT+BRSM="+e+",1,1,"+n+a),await connectAndSend(),await waitForOK(500)}async function DxBcastAddSourceWithPDBugHack(e,t){let n=await DxBcastSyncToStream(e,1,0,t);return n>0&&(await setCmd("AT+BRSH="+n+",15000"),await connectAndSend(),await waitFor(300),await DxBcastReSyncToBIS(n,e,t)),new Promise(((e,t)=>{e(n)}))}async function DxBcastAddSourceByBRSA(e,t,n){let a=null;if(e.bcastname&&e.bcastname.match(/Control for SA0190/i))return console.log("PD Bug Hack needed for "+e.bcastname),a=await DxBcastAddSourceWithPDBugHack(e,t),void((!a||a<1)&&alert("(0x9335) Unable to join stream with PD Hack."+(a?" Error "+-a:"")));if(a=await DxBcastSyncToStream(e,1,1,t),!a){let e=newlogs.substring(newlogs.indexOf("&gt;&gt; ")+9,newlogs.indexOf("<br>")),t="(0x9331) Unrecognized +BRSA ";return console.log(t,e),void alert(t)}let i=await DxBcastGetStreamDetails(a);if(i&&i.is_encrypted&&!e.encrypt){if(console.log("stream is encrypted but bcastcode not provided"),"function"==typeof n){let t=await n(e);e=Object.assign({},e,t)}await DxBcastReSyncToBIS(a,e,t)}else if(!i||i.sample_rate<1){if(await waitFor(3e3),console.log("retry to get stream details"),i=await DxBcastGetStreamDetails(a),!i||i.sample_rate<1){let e="(0x9337) Unable to get correct stream details";console.log(e),alert(e)}}else console.log("no need to resync BIS")}async function DxBcastPSCList(e){let t=getNewLogs();if(await setCmd("AT+BRCE="+(e||255)),await connectAndSend())return await waitForOK(5e3),await waitFor(300),new Promise(((e,n)=>{let a=getNewLogs(t),i=a.match(/\+BRCE\:([^<|]+)<br>/g),r=[],o=-1,s=null;if(!i)return console.log("(0x9322) Persistent Source Config not found",a),void e(null);for(let e=0;e<i.length;e++){let t=i[e].replace(/<br>/,"").replace(/\+BRCE\:/,"").split(",");1!=t.length?(o=isNaN(parseInt(t[0]))?0:parseInt(t[0]),r[o]={},r[o].aid=isNaN(parseInt(t[1]))?null:parseInt(t[1]),r[o].bid=isNaN(parseInt(t[2]))?null:parseInt(t[2]),r[o].bcastcode=t[3]&&t[3].length>0&&!t[3].match(/null/i)?t[3]:null,r[o].bcastname=t[4]&&t[4].length>0&&!t[4].match(/null/i)?t[4]:null,r[o].idschangeable=isNaN(parseInt(t[5]))?null:parseInt(t[5]),r[o].current=isNaN(parseInt(t[6]))?null:parseInt(t[6])):s=isNaN(parseInt(t[0]))?null:parseInt(t[0])}console.log("Persistent Source Config",s,r),e({retcode:s,list:r})}))}async function DxBcastBSCList(){if(!await DxPowerUp())return;let e=getNewLogs();return await setCmd("AT+BRCD"),await connectAndSend(),await waitForOK(5e3),await waitFor(300),new Promise(((t,n)=>{let a=getNewLogs(e),i=a.match(/\+BRCD\:([^<|]+)<br>/g),r=[],o=-1,s=null;if(!i)return console.log("(0x9326) Unable to find Broadcast Source Config",a),void t(null);for(let e=0;e<i.length;e++){let t=i[e].replace(/<br>/,"").replace(/\+BRCD\:/,"").split(",");1!=t.length?(o=isNaN(parseInt(t[0]))?0:parseInt(t[0]),r[o]={},r[o].aid=isNaN(parseInt(t[1]))?null:parseInt(t[1]),r[o].bid=isNaN(parseInt(t[2]))?null:parseInt(t[2]),r[o].sid=isNaN(parseInt(t[3]))?null:parseInt(t[3]),r[o].bcastcode=t[4]&&t[4].length>0&&!t[4].match(/null/i)?t[4]:null,r[o].bcastname=t[5]&&t[5].length>0&&!t[5].match(/null/i)?t[5]:null,r[o].mismatch=isNaN(parseInt(t[6]))?null:parseInt(t[6]),r[o].idschangeable=isNaN(parseInt(t[7]))?null:parseInt(t[7]),r[o].current=isNaN(parseInt(t[8]))?null:parseInt(t[8])):s=isNaN(parseInt(t[0]))?null:parseInt(t[0])}console.log("Broadcast Source Config",s,r),t({retcode:s,list:r})}))}async function DxBcastEraseBSC(e){if(e=isNaN(parseInt(e))?null:parseInt(e),await setCmd("AT+BRPS=-2"),await connectAndSend())return await waitForOK(5e3),await waitFor(300),await setCmd("AT+BRCR="+(null!==e&&e>-1?e:"255")),await connectAndSend(),await waitForOK(500)}async function DxBcastErasePSC(e,t){if(e=isNaN(parseInt(e))?null:parseInt(e),await setCmd("AT+BRPS=-2"),await connectAndSend())return await waitForOK(5e3),await waitFor(300),await setCmd("AT+BRCR="+(null!==e&&e>-1?e:"255")),await connectAndSend(),await waitFor(100),await setCmd("AT+BRCV"),await connectAndSend(),await waitForOK(5e3),t&&(await setCmd("AT+RST"),await connectAndSend()),1}async function DxBcastSaveToPSC(e){await setCmd("AT+BRCV"),await connectAndSend(),await waitForOK(5e3),e&&(await setCmd("AT+RST"),await connectAndSend())}async function DxBSrcConfigInfo(){let e=getNewLogs();if(await setCmd("AT+BBN?"),await connectAndSend())return await waitForOK(5e3),await setCmd("AT+BIDS?"),await connectAndSend(),await setCmd("AT+BBC?"),await connectAndSend(),await setCmd("AT+MODE?"),await connectAndSend(),await waitForOK(500),await setCmd("AT+BADVQ=0"),await connectAndSend(),await waitFor(100),await setCmd("AT+BADVQ=1"),await connectAndSend(),await waitFor(100),await setCmd("AT+BCFGQ=0"),await connectAndSend(),await waitFor(100),await setCmd("AT+BCFGQ=1"),await connectAndSend(),await waitFor(100),new Promise(((t,n)=>{let a=getNewLogs(e),i=a.match(/\+BBN\:([^<|]+)<br>/g),r=a.match(/\+BID\:([^<|]+)<br>/g),o=a.match(/\+BBC\:([^<|]+)<br>/g),s=a.match(/\+MODE\:([^<|]+)<br>/g),c=a.match(/\+BADVQ\:0,([^<|]+)<br>/g),l=a.match(/\+BCFGQ\:0,([^<|]+)<br>/g),d=a.match(/\+BADVQ\:1,([^<|]+)<br>/g),u=a.match(/\+BCFGQ\:1,([^<|]+)<br>/g),w=i&&i[0].replace(/<br>/,"").replace(/\+BBN\:/,""),g=r&&r[0].replace(/<br>/,"").replace(/\+BID\:/,"").split(","),p=o&&o[0].replace(/<br>/,"").replace(/\+BBC\:/,""),m=s&&s[0].replace(/<br>/,"").replace(/\+MODE\:/,"").split(","),f=c?c[0].replace(/<br>/,"").replace(/\+BADVQ\:0,/,"").split(","):[],N=l?l[0].replace(/<br>/,"").replace(/\+BCFGQ\:0,/,"").split(","):[],S=d?d[0].replace(/<br>/,"").replace(/\+BADVQ\:1,/,"").split(","):[],b=u?u[0].replace(/<br>/,"").replace(/\+BCFGQ\:1,/,"").split(","):[];if(!(i&&r&&o&&s&&w&&g&&p&&m))return console.log("(0x9202) Unable to get Dx Broadcast Config",a),void t(null);let I=N[0]||"",D=parseInt(I.slice(46,48)+I.slice(44,46)+I.slice(42,44)+I.slice(40,42),16),A=parseInt(I.slice(0,2),16);I=b[0]||"";let h=parseInt(I.slice(46,48)+I.slice(44,46)+I.slice(42,44)+I.slice(40,42),16),B=parseInt(I.slice(0,2),16);I=f[0]||"";let x=parseInt(I.slice(30,32)+I.slice(28,30),16),C=parseInt(I.slice(34,36)+I.slice(32,34),16),v=parseInt(I.slice(6,8)+I.slice(4,6),16),y=parseInt(I.slice(10,12)+I.slice(8,10),16);I=S[0]||"";let R=parseInt(I.slice(30,32)+I.slice(28,30),16),T=parseInt(I.slice(34,36)+I.slice(32,34),16),F=parseInt(I.slice(6,8)+I.slice(4,6),16),L=parseInt(I.slice(10,12)+I.slice(8,10),16),O={aid:isNaN(parseInt(g[0]))?null:parseInt(g[0]),bid:isNaN(parseInt(g[1]))?null:parseInt(g[1]),bcastname:w,bcastcode:p,audiomode:m[0],transportmode:m[1],currentcfg:m[2],audiohqpref:m[3]||null,audiogamepref:m[4]||null,bcastsample0:isNaN(D)?null:D,bcastencrypt0:isNaN(A)?null:A,bcastsample1:isNaN(h)?null:h,bcastencrypt1:isNaN(B)?null:B,bcastpin0:isNaN(x)||x>4096?null:x,bcastpix0:isNaN(C)||C>4096?null:C,bcastpin1:isNaN(R)||R>4096?null:R,bcastpix1:isNaN(T)||T>4096?null:T,bcastain0:isNaN(v)||v>4096?null:v,bcastaix0:isNaN(y)||y>4096?null:y,bcastain1:isNaN(F)||F>4096?null:F,bcastaix1:isNaN(L)||L>4096?null:L};console.log("Broadcast Config",O),t(O)}))}async function DxSrcSetMode(e,t,n){let a=",1,1",i=getNewLogs();if(await setCmd("AT+MODE?"),!await connectAndSend())return;await waitForOK(5e3),await waitFor(100);let r=getNewLogs(i).match(/\+MODE\:([^<|]+)<br>/g),o=r&&r[0].replace(/<br>/,"").replace(/\+MODE\:/,"").split(",");return o&&o.length<4&&(a=""),await setCmd("AT+MODE="+e+","+t+","+n+a),await connectAndSend(),await waitForOK(500)}async function DxBSrcSetBBN(e){e=e.replace(/\,/g,".");let t=unescape(encodeURIComponent(e));if(!(t.length<4||t.length>30)&&(await setCmd("AT+BBN="+e),await connectAndSend()))return await waitForOK(500)}async function DxBSrcSetBBNRaw(e){e=e.replace(/\,/g,".");let t=unescape(encodeURIComponent(e));if(t.length<4||t.length>30)return;if(await setCmd("AT"),!await connectAndSend())return;await waitForOK(500),await waitFor(100);let n=(new TextEncoder).encode(e),a=await connectAndSend([{cmdid:1,hexbytes:n}]);return a?1:a}async function DxBSrcSetBBC(e){e=e.replace(/\,/g,".");let t=unescape(encodeURIComponent(e));if(!(t.length<4||t.length>30)&&(await setCmd("AT+BBC="+e),await connectAndSend()))return await waitForOK(500)}async function DxBSrcSetBBCRaw(e){e=e.replace(/\,/g,".");let t=unescape(encodeURIComponent(e));if(t.length<4||t.length>30)return;if(await setCmd("AT"),!await connectAndSend())return;await waitForOK(500),await waitFor(100);let n=(new TextEncoder).encode(e),a=await connectAndSend([{cmdid:2,hexbytes:n}]);return a?1:a}async function DxSrcSetMFGA(e,t){let n=!e||0==e.length,a=null;if(t=t?1:0,await setCmd("AT+BCAD=1,"+(n?"1,":(e.length>1?"0":t)+","+e[0])),await connectAndSend()){if(a=await waitForOK(500),a){if(n||1==e.length)return a;for(let n=1;n<e.length;n++)await setCmd("AT+BCAD=0,"+t+","+e[n]),await connectAndSend(),a=await waitForOK(500);return a}console.log("(0x9230) Unable to update MFG AD",newlogs)}}async function DxSrcSetJParty(e,t){let n=await DxSrcSetAudioConfigRaw(!1,e?132:4,32);return n?(n=await DxSrcSetMFGA(e?["15FF570000000000000000","000000000000000000DFFD"]:[],t),n||(console.log("(0x9240) Unable to set MFGA"),n)):(console.log("(0x9242) Unable to set HQ config unencryption"),n)}async function DxSrcSetEdgeOptimized(e){let t=await DxSrcSetAudioConfigRaw(!0,132,2048);if(!t)return console.log("(0x9242) Unable to set SQ config to unencrypted"),t;await waitFor(100);let n="starkey"==e?[0,0,0,96,0,96,0,1,7,0,0,1,0,1,0,96,0,96,20,0].slice():"create"==e?[0,0,0,96,0,96,0,1,7,0,0,1,0,1,0,48,0,48,20,0].slice():[0,0,0,96,0,102,0,1,7,0,0,1,0,1,0,160,0,160,20,0].slice();return t=await connectAndSend([{cmdid:6,hexbytes:n}]),t?1:t}async function DxSrcSetENC(e,t){let n=getNewLogs();if(await setCmd("AT+BCFGQ="+(e?"1":"0")),!await connectAndSend())return;await waitForOK(500),await waitFor(100);let a=getNewLogs(n),i=a.match(/\+BCFGQ\:[0|1],([^<|]+)<br>/g),r=i&&i[0].replace(/<br>/,"").replace(/\+BCFGQ\:[0|1],/,"").split(",");if(!i||!r)return void console.log("(0x9206) Unable to get Dx Broadcast Config",a);let o=r[0].replace(/^.{2}/,(t>15?"":"0")+t.toString(16).toUpperCase());return await setCmd("AT+BCFG="+(e?"1":"0")+","+o.length),await connectAndSend(),await waitForOK(500),await setCmd(o),await connectAndSend(),await waitForOK(500)}async function DxSrcSetAudioConfigRaw(e,t,n){if(await setCmd("AT"),!await connectAndSend())return;await waitForOK(500),await waitFor(100);let a=e?7:4,i=e?8==n?[132,1,0,40,0,20,0,2,0,2,0,1,0,0,0,4,0,0,0,2,0,0,0,8,0,0,39,16,0,0,39,16].slice():[132,1,0,60,0,20,0,2,0,2,0,1,0,0,0,4,0,0,0,2,0,0,0,32,0,0,39,16,0,0,39,16].slice():128==n?[4,1,0,80,0,20,0,2,0,2,0,1,0,0,0,4,0,0,0,4,0,0,0,128,0,0,39,16,0,0,117,48].slice():[4,1,0,100,0,20,0,2,0,2,0,1,0,0,0,4,0,0,0,4,0,0,8,0,0,0,39,16,0,0,117,48].slice();i[0]=t;let r=await connectAndSend([{cmdid:a,hexbytes:i}]);return r?1:r}var azdn1=atob("aHR0cHM6Ly9xa2F1ZGlvLmR4Y2xvdWQuaW8v"),azdn2=atob("aHR0cHM6Ly9ndC1xa2F1ZGlvLWZuczIuYXp1cmV3ZWJzaXRlcy5uZXQv"),afkqr="uliVVZ9Ts0-qemMF6WH-vi1BnI5Kz7ThujeeaBi9j6jdAzFuxS3m5Q%3D%3D";async function AzUpdateDeviceInfo(e){let t=azdn1;const n=window.location.hostname;0==n.length||azdn1.replace(/https\:\/\//,"").replace(/\//,"").search(n)<0||(getId("dev_sn")&&getId("dev_model")?setTimeout((async function(){let n=getId("dev_sn").innerHTML,a=getId("dev_model").innerHTML.replace(/ /,"-"),i=e.val1&&e.val1.length>0?btoa(e.val1.toString()):"",r=t+"api/updatedeviceinfo/userid/casttool/"+a+"/"+n+"/?action=change&key1="+e.key1+"&val1="+i;await fetch(r,{method:"GET"}).catch((e=>console.log("Az request failed:",e)))}),50):console.log("(0x9072) Unable to get sn and model for AzUpdate"))}async function AzDecodeBroadcastQR(e){let t=azdn1;const n=window.location.hostname;(0==n.length||azdn1.replace(/https\:\/\//,"").replace(/\//,"").search(n)<0)&&(t=azdn2);const a=t+"api/broadcastqr?qr="+btoa(e)+"&code="+afkqr,i=new AbortController,r=setTimeout((()=>i.abort()),8e3);let o=null;try{if(console.log("requesting Az to decode QR Text"),o=await fetch(a,{method:"GET",headers:{Accept:"application/json"},signal:i.signal}),clearTimeout(r),!o.ok)return Promise.resolve({status:o.status,error:o.statusText});const e=await o.json();return{status:o.status,response:e.response}}catch(e){return console.log("request failed:",e),Promise.resolve({status:o&&o.status?o.status:0,error:e.message||e})}}async function sendFeatureReportsATCmd(e,t){let n=outputReportIdATCmd,a=maxHIDBufferSize,i=getCmd(),r=convertATCmdToBuffer(i,a);if(0!=i.length)return new Promise(((t,a)=>{e.sendFeatureReport(n,r).then((()=>{verboselog&&console.log("hid - sending Dx command",i),insertLog("<< "+i,"dataout"),t(n,i)})).catch((e=>{console.log("hid - send Dx Command error",e),insertLog("Error sending Dx Command","dataout","critical"),a(e)}))}))}async function waitForOK(e){let t=getNewLogs(),n=(new Date).getTime()+e;for(;(new Date).getTime()<n;){let e=getNewLogs(t),n=e.match(/&gt;\s*(?:AT\+)?ERR\=([^<|]+)<br>/g),a=n&&n[0].replace(/<br>/,"").replace(/&gt;\s*(?:AT\+)?ERR\=/,""),i=n&&a.length>0&&!isNaN(parseInt(a))?parseInt(a):null;if(i)return console.log("Dx responded ERR code "+i),-i;if(e.match(/&gt;\s*(?:AT\+)?OK\s*<br>/gi))return 1;await new Promise((e=>setTimeout(e,100)))}}function convertATCmdToBuffer(e,t){(e=e.replace(/(?:\r\n|\n\r|\r|\n)/g,"\r\n")).indexOf("\r\n")<0&&(e+="\r\n");let n=new Uint8Array(t),a=unescape(encodeURIComponent(e));if(!(a.length>254||a.length>t-1)){n[0]=a.length;for(let e=0;e<a.length;e++)n[e+1]=a.charCodeAt(e);return n}}function convertBufferToATRsp(e){if(!("TextDecoder"in window)){let t=new Uint8Array(e),n="";for(let e=0;e<t.length;e++)t[e]<31||(n+=String.fromCharCode(t[e]));return t=null,n+" (0x9080) TextDecoder Library Not Found"}let t=new TextDecoder("utf-8").decode(e);return t=t.replace(/(?:\0)/g,""),t=t.replace(/(\r\n|\n\r|\r|\n)$/g,""),t=t.replace(/(?:\r\n|\n\r|\r|\n)/g,"<br>"),t}const waitFor=e=>new Promise((t=>setTimeout(t,e))),getId=e=>document.getElementById(e),queryAll=e=>document.querySelectorAll(e);let requestParams={filters:deviceFilters,exclusionFilters:excludeFilters},selectedDevice={device:null};function clearLogs(){const e=getId("mylog");getId("mycaption").innerHTML="",e.innerHTML=""}function insertLog(e,t="event",n="info"){const a=getId("mylog"),i=-parseInt((new Date).getTimezoneOffset()/60),r=new Date((new Date).getTime()+3600*i*1e3);e=e.replace(/[&<>]/g,(e=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[e]))),a.insertAdjacentHTML("afterbegin",r.toJSON().slice(11,23)+"&nbsp;"+e+"<br>"),a.dataset.lasttype=t,a.dispatchEvent(new CustomEvent("log:"+t,{detail:{msg:e,type:t,level:n,timestamp:new Date},bubbles:!0}))}function getAllLogs(){return getId("mylog").innerHTML}function getNewLogs(e){const t=getId("mylog").innerHTML;return void 0===e?t.substring(0,t.indexOf("&nbsp;")):0==e.length?t:t.substring(0,t.indexOf(e))}async function setCmd(e){getId("mycmd").value=e,await waitFor(50)}function getCmd(){return getId("mycmd").value}var connectDebounce=null;function handleConnectedDevice(e){connectDebounce||(connectDebounce=setTimeout((()=>{connectDebounce=null}),300),console.log("hid - connected: "+e.device.productName,e),insertLog("Device connected: "+e.device.productName+" (VID:0x"+e.device.vendorId.toString(16)+" - PID:0x"+e.device.productId.toString(16)+")","connect"))}var disconnectDebounce=null;function handleDisconnectedDevice(e){disconnectDebounce||(disconnectDebounce=setTimeout((()=>{disconnectDebounce=null}),300),console.log("hid - disconnected: "+e.device.productName,e),insertLog("Device disconnected: "+e.device.productName+" (VID:0x"+e.device.vendorId.toString(16)+" - PID:0x"+e.device.productId.toString(16)+")","disconnect")),e.device.close()}function handleInputReport(e){verboselog&&console.log("hid - "+e.device.productName+" - input report "+e.reportId+" - ",convertBufferToATRsp(e.data.buffer)),insertLog(">> "+convertBufferToATRsp(e.data.buffer),"datain")}async function connectAndSend(e){return new Promise(((t,n)=>{_cns(e).then((e=>{t(e)})).catch((e=>{console.log("hid",e),t(null)}))}))}async function _cns(e){let t=selectedDevice,n=requestParams,a=deviceFilters,i=e&&e[0]&&e[0].cmdid&&e[0].hexbytes;return verboselog&&console.log(t.device?"hid - opened: "+t.device.opened:"hid - no connected device",t.device),new Promise(((r,o)=>{if(t.device&&t.device.opened)i?sendFeatureReportsRaw(t.device,e).then((()=>{r(t.device)})).catch((e=>{o(e)})):sendFeatureReportsATCmd(t.device,e).then((()=>{r(t.device)})).catch((e=>{o(e)}));else try{navigator.hid.requestDevice(n).then((n=>{console.log("hid - "+n.length+" device(s) with matching filters selected",a),0!=n.length?(navigator.hid.addEventListener("connect",handleConnectedDevice),navigator.hid.addEventListener("disconnect",handleDisconnectedDevice),n[0].open().then((()=>{t.device=n[0],console.log("hid - opened device: "+t.device.productName),handleConnectedDevice({device:t.device}),t.device.addEventListener("inputreport",handleInputReport),i?sendFeatureReportsRaw(t.device,e).then((()=>{r(t.device)})).catch((e=>{o(e)})):sendFeatureReportsATCmd(t.device,e).then((()=>{r(t.device)})).catch((e=>{o(e)}))}))):r(null)})).catch((e=>{verboselog&&console.log("hid - requestDevice error",e),o({error:e,msg:"Request device error"})}))}catch(e){verboselog&&console.log("hid - requestDevice try-catch error",e),o({error:e,msg:"Request device error"})}}))}async function sendFeatureReportsRaw(e,t){let n=outputReportIdRaw,a=maxHIDBufferSize,i=t[0].cmdid,r=t[0].hexbytes,o=convertHexBytesToBuffer(i,r,a);return o[1]=2*Math.floor((r.length+1)/2),new Promise(((t,a)=>{e.sendFeatureReport(n,o).then((()=>{verboselog&&console.log("hid - sent feature report ",n,o),insertLog("HID Report Raw sent","rawout"),t(n,o)})).catch((e=>{console.log("hid - send feature report error",e),insertLog("Error sending HID Report Raw","rawout","critical"),a(e)}))}))}function convertHexBytesToBuffer(e,t,n){let a=new Uint8Array(n);if(!(t.length>253||t.length>n-2)){a[0]=e,a[1]=t.length;for(let e=0;e<t.length;e++)a[e+2]=t[e];return a}}function convertBufferToHexBytes(e){let t=new Uint8Array(e),n=new Array(t.length),a=t.length;for(;a--;)n[a]=(t[a]<16?"0":"")+t[a].toString(16);return t=null,n.join(" ")}
+</script>
+
+<script type="application/javascript">
+//
+// Check against basic web browser compatibility
+//
+var isBrowserOK = false;
+var isAsyncAvailable = false;
+var isWebHIDAvailable = true;
+
+try {
+  eval('async function testAsync() {}');
+  isAsyncAvailable = true;
+} catch (e) {}
+
+if(!isAsyncAvailable) {
+  console.log('async function error');
+  alert('(0x1010) Async Function Error!\n\nPlease use Chrome v100+ desktop browser to access this page.');
+
+} else if(!('hid' in navigator)) {
+  console.log('navigator.hid not found');
+  alert('(0x1012) WebHID API Error!\n\nPlease use Chrome v100+ desktop browser to access this page.');
+  isWebHIDAvailable = false;
+
+} else {
+  isBrowserOK = true;
+}
+
+
+//
+// Spinner functions
+//
+var spinner = {};
+
+async function showSpinner(eid, mintime, timeout, timeoutfunc) {
+  let s = { started: null, mustlasttill: null, mustendby: null, timer: null };
+  let ele = getId(eid);
+  if(!ele) return;
+
+  (spinner[eid] !== undefined) && clearTimeout(spinner[eid].timer);
+
+  mintime || (mintime = 300);
+  timeout || (timeout = 3600*1000);
+  mintime > timeout && (mintime = timeout);
+
+  s.started = new Date();
+  s.mustlasttill = new Date(s.started.getTime() + mintime);
+  s.mustendby = new Date(s.started.getTime() + timeout);
+  s.timer = setTimeout(function() {
+    if(timeoutfunc) {
+      timeoutfunc();
+    } else {
+      stopSpinner(eid, true);
+      alert('(0x1020) Operation timed out!');
+    }
+  }, (timeout));
+
+  spinner[eid] = Object.assign({}, s);
+  ele.classList.add('spinner');
+  return ele;
+}
+
+async function stopSpinner(eid, forcestop) {
+  let s = spinner[eid];
+  let ele = getId(eid);
+  if(!ele || s === undefined) return;
+
+  // will stop spinner if mustlasttill is within 300ms
+  if(!forcestop && s.mustlasttill > (new Date(new Date().getTime() + 300))) {
+    console.log('spinner started ' + s.started.toJSON() + ' must last till ' + s.mustlasttill.toJSON());
+    return new Promise((resolve, reject) => {
+      clearTimeout(s.timer);
+      s.timer = setTimeout(function(){
+        stopSpinner(eid, true);
+        resolve();
+      }, s.mustlasttill.getTime() - new Date().getTime());
+    });
+  }
+
+  clearTimeout(s.timer);
+  spinner[eid] = { started: null, mustlasttill: null, mustendby: null, timer: null };
+  ele.classList.remove('spinner');
+  return ele;
+}
+
+
+//
+// Button and Modal class handling
+//
+function disableActions(ancestorid, moreclass) {
+  let elearr = [];
+  let selector = (ancestorid ? '#' + ancestorid + ' ' : '') + '.action' + (moreclass ? '.' + moreclass : '');
+  queryAll(selector).forEach(ele => !ele.disabled && elearr.push(ele) && (ele.disabled = true));
+  return elearr;
+}
+
+function enableActions(ancestorid, moreclass) {
+  let elearr = [];
+  let selector = (ancestorid ? '#' + ancestorid + ' ' : '') + '.action' + (moreclass ? '.' + moreclass : '');
+  queryAll(selector).forEach(ele => ele.disabled && elearr.push(ele) && (ele.disabled = false));
+  return elearr;
+}
+
+function hideActions(ancestorid, moreclass) {
+  let elearr = [];
+  let selector = (ancestorid ? '#' + ancestorid + ' ' : '') + '.action' + (moreclass ? '.' + moreclass : '');
+  queryAll(selector).forEach(ele => !ele.hidden && elearr.push(ele) && (ele.hidden = true));
+  return elearr;
+}
+
+function unhideActions(ancestorid, moreclass) {
+  let elearr = [];
+  let selector = (ancestorid ? '#' + ancestorid + ' ' : '') + '.action' + (moreclass ? '.' + moreclass : '');
+  queryAll(selector).forEach(ele => ele.hidden && elearr.push(ele) && (ele.hidden = false));
+  return elearr;
+}
+
+function openModal(modal) {
+  getId(modal).classList.add('active');
+}
+
+function closeModal(modal) {
+  getId(modal).classList.remove('active');
+}
+
+function switchIframe(ele_container, ele_content) {
+  queryAll('#' + ele_container.id + ' iframe').forEach(ele => ele.hidden = true);
+  ele_content.hidden = false;
+  try {
+    ele_content.contentWindow.scrollTo(0, 0);
+  } catch {}
+  openModal(ele_container.id);
+}
+</script>
+
+<style type="text/css">
+  .dark-mode {
+    background-color: black;
+    color: #BBBBBB;
+    input[type="text"], textarea {
+      background-color : #BBBBBB; 
+    }
+  }
+
+  .light-mode {
+    background-color: white;
+    color: black;
+    input[type="text"], textarea {
+      background-color : white; 
+    }
+  }
+
+  #mycaption {
+    font-family: Consolas,monospace;
+    font-size: 24px;
+    min-height: 28px;
+  }
+
+  fieldset {
+    display: inline;
+    background: #e6e8ff;
+    border: 1px solid #4238ca;
+  }
+
+  .spinner {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #555;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: auto;
+    margin-top: 40px;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+</style>
+
+
+
+<!--  Front End UI: START  -->
+<script type="application/javascript">
+//
+// Window events handling
+//
+var urlParams = null;
+
+window.onload = function() {
+  console.log('window onload fired');
+  !isBrowserOK && queryAll('.action').forEach(ele => ele.disabled = true);
+  urlParams = new URLSearchParams(window.location.search);
+
+  getId('mylog').hidden = true;
+  getId('atcmd').hidden = true;
+};
+
+window.onbeforeunload = function(e) {
+  let s = selectedDevice;
+  if (isBrowserOK && s.device && s.device.opened) {
+    // Disconnect and release device but not necessary reliable
+    s.device.forget();
+  }
+  // rem to avoid user prompt
+  // e.preventDefault();
+}
+</script>
+
+<script type="application/javascript">
+//
+// UI logic functions
+//
+async function resetSystemAndWait(mintime, spinnerid) {
+  let ret = await DxSystemReset();
+  let minsshow = 2*1000;
+
+  // override mintime to minimum spinner show time if reset is unsuccessful
+  // may be device disconnected??  so no need to wait too long
+  mintime = ret ? mintime : minsshow;
+  let mustlasttill = new Date(new Date().getTime() + mintime);
+
+  alert('Completed! Resetting the device now. Click GET STARTED again to refresh the device information after reboot.');
+  console.log(new Date().toUTCString(), 'reset system must wait till ' + mustlasttill);
+  await showSpinner(spinnerid, minsshow);
+  while(new Date() < mustlasttill) await waitFor(1000);
+  await stopSpinner(spinnerid);
+}
+
+function clearDeviceConfigInfo(scrolltotop) {
+  // defaults for dev_info section
+  // display fields  = 'N/A'
+  // select inputs   = none selected
+  // checkboxes      = unchecked
+  // action elements = enabled and hidden (except checkboxes)
+  queryAll('span.devinfo').forEach(ele => ele.innerHTML = 'N/A');
+  queryAll('select.devinfo').forEach(ele => ele.value = 0);
+  queryAll('input[type="checkbox"].devinfo').forEach(ele => ele.checked = false);
+  queryAll('#dev_info .action').forEach(ele => ele.disabled = false);
+  queryAll('#dev_info .action:not(input[type="checkbox"])').forEach(ele => ele.hidden = true);
+  getId('getstarted').disabled = false;
+  getId('dev_info').hidden = true;
+  stopSpinner('sspinner', true);
+  stopSpinner('dev_spinner', true);
+  scrolltotop && window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+}
+
+async function getTxDeviceConfigInfo() {
+  const caption = getId('mycaption');
+  caption && (caption.innerHTML = '');
+  clearDeviceConfigInfo();
+
+  const ele_sn = getId('dev_sn');
+  const ele_model = getId('dev_model');
+  const ele_fw = getId('dev_fw');
+  const ele_pdl = getId('dev_pdl');
+  const ele_mode = getId('dev_mode');
+  const ele_hqcfg = getId('dev_hqcfg');
+  const ele_sqcfg = getId('dev_sqcfg');
+  const ele_bcastid = getId('dev_bcastid');
+  const ele_bcastname = getId('dev_bcastname');
+  const ele_bcastcode = getId('dev_bcastcode');
+  const ele_vl = getId('dev_vl');
+  const ele_sqoffset = getId('dev_sqoffset');
+  const ele_sqoffset_span = getId('dev_sqoffset_span');
+
+  // prefer connecting HID device before starting spinner
+  await setCmd('AT');
+  if(!(await connectAndSend())) {
+    alert('Cannot find the Broadcaster on the HID device list?\nMake sure it is plugged into this computer using a USB DATA CABLE.');
+    return;
+  }
+
+  disableActions();
+  showSpinner('sspinner', 2*1000, 15*1000, function() {
+    stopSpinner('sspinner');
+    alert('(0x1102) Unable to connect the device.');
+    enableActions();
+  });
+
+  let msg = null;
+  let info = {};
+  let isBA210v1 = null;
+  let isMfgAd = null;
+  let isBcastmode = null;
+
+  let ret = await DxDevInfo();
+  if(!ret) {
+    msg = '(0x1104) Unable to get device information.  Makre sure it is not connected by a mobile app.';
+    await stopSpinner('sspinner');
+    enableActions();
+    alert(msg);
+    return ret;
+  }
+
+  info = Object.assign(info, ret);
+  // BA210 v1 does not support as many features as in v2
+  isBA210v1 = info['hw'].match(/^1\./) && (info['model'].match(/^BA210/i) || info['model'].match(/^QKAudio/i));
+  // Firmwar 3.8.150+ supports MfgAd which is required for supporing JBL Auracast speakers and Partybox
+  isMfgAd = info['fw'].match(/^[4-9]\..*/) || info['fw'].match(/^[3]\.([8-9]|[0-9]{2,})\..*/);
+
+  let model = isBA210v1 ? 'BA210 v1' : (info['model'] == 'BA210' ? 'BA210 v2' : info['model']);
+  ele_sn.innerHTML = info['sn'];
+  ele_model.innerHTML = model;
+  ele_fw.innerHTML = info['fw'];
+  ele_pdl.innerHTML = info['pdl'].length + ' Rx device(s)';
+  insertLog('SN:[' + info['sn']
+           + '] Model:[' + model
+           + '] Firmware:['+ info['fw']
+           + '] PDL:['+ info['pdl'].length + ']');
+
+  ret = await DxBSrcConfigInfo();
+  if(!ret && !isBA210v1) {
+    msg = '(0x2202) Unable to get Broadcast Config.';
+    await stopSpinner('sspinner');
+    enableActions();
+    alert(msg);
+    // continue to show device information without broadcast config
+    getId('dev_info').hidden = false;
+    window.scrollTo({ top: 600, left: 0, behavior: 'smooth' });
+    return info;
+  }
+
+  info = Object.assign(info, ret);
+  isBcastmode = info['audiomode'] == 2;
+
+  let hqsampling = info['bcastsample0'] == 0x0800 ? '48K' : (info['bcastsample0'] == 0x0080 ? '32K' : 'UNKNOWN');
+  let sqsampling = info['bcastsample1'] == 0x0020 ? '24K' : (info['bcastsample1'] == 0x0008 ? '16K' : 'UNKNOWN');
+  let hqencrypted = info['bcastencrypt0'] == 0x04 ? 'ENCRYPTED' : (info['bcastencrypt0'] == 0x84 ? 'OPEN' : 'UNKNOWN');
+  let sqencrypted = info['bcastencrypt1'] == 0x04 ? 'ENCRYPTED' : (info['bcastencrypt1'] == 0x84 ? 'OPEN' : 'UNKNOWN');
+  let audiomode = info['audiomode'] == 2 ? 'BROADCAST' : (info['audiomode'] == 1 ? 'GAMING' : 'CLASSIC');
+  let bcastquality = info['currentcfg'] == 0 ? 'HQ' : 'SQ';
+  let pimin1 = info['bcastpin1'];
+  
+  if(isBA210v1) {
+    // BA210 v1 does not support Broadcast Config BADVQ and BCFGQ, and MODE has only two parameters
+    hqsampling = '48K';
+    sqsampling = 'NA';
+    hqencrypted = 'ENCRYPTED';
+    sqencrypted = 'NA';
+    bcastquality = 'HQ';
+  } else {
+    unhideActions(null, 'bcfg');
+  }
+
+  unhideActions(null, 'basicedit');
+  unhideActions(null, 'mfgad');
+  unhideActions(null, 'edgeai');
+
+  ele_mode.innerHTML = isBcastmode ? ('Auracast ' + bcastquality) : (audiomode == 'GAMING' ? 'Gaming Audio' : 'Classic Audio');
+  ele_sqcfg.innerHTML = sqsampling + ' - ' + sqencrypted;
+  ele_hqcfg.innerHTML = hqsampling + ' - ' + hqencrypted;
+  ele_bcastid.innerHTML = '0x' + parseInt(info['aid']).toString(16).toUpperCase() + ' - 0x' + parseInt(info['bid']).toString(16).toUpperCase();
+  ele_bcastname.textContent = info['bcastname'];
+  ele_bcastcode.textContent = info['bcastcode'];
+  ele_hqcfg['data-sam'] = hqsampling;
+  ele_sqcfg['data-sam'] = sqsampling;
+  ele_hqcfg['data-enc'] = hqencrypted;
+  ele_sqcfg['data-enc'] = sqencrypted;
+  ele_mode['data-audiomode'] = audiomode;
+  ele_mode['data-bcastqly'] = bcastquality;
+
+  insertLog('Mode:[' + audiomode + (isBcastmode ? (' ' + bcastquality) : '')
+        + '] SQ-ENC:[' + sqencrypted
+        + '] SQ-SAM:[' + sqsampling
+        + '] HQ-ENC[' + hqencrypted
+        + '] HQ-SAM:[' + hqsampling
+        + '] AID:[0x' + parseInt(info['aid']).toString(16).toUpperCase()
+        + '] BID:[0x' + parseInt(info['bid']).toString(16).toUpperCase()
+        + '] BN:[' + (info['bcastname'] ? info['bcastname'].replace(/\[/g, '(').replace(/\]/g, ')') : '')
+        + '] BC:[' + (info['bcastcode'] ? info['bcastcode'].replace(/\[/g, '(').replace(/\]/g, ')') +']' : ''));
+
+  // BA210 v1 does not support DG Volume
+  ret = isBA210v1 ? null : await DxVLDGInfo();
+  if(!ret && !isBA210v1) {
+    msg = '(0x2116) Unable to get Volume and Digital Gain settings.';
+    await stopSpinner('sspinner');
+    enableActions();
+    alert(msg);
+    return ret;
+  }
+
+  info = Object.assign(info, ret);
+
+  if(isBA210v1) {
+    insertLog('VL:[NA] SQoffset:[NA]');
+
+  } else {
+    // firmware >3.2 and <3.4.117 supports DG but not VL
+    ele_vl.innerHTML = info['vl'] || 'N/A';
+    ele_sqoffset.hidden =  false;
+    ele_sqoffset.value =  info['sqoffset'];
+    ele_sqoffset['data-default'] = info['sqoffset'];
+    ele_sqoffset_span.innerHTML = '';
+    insertLog('VL:[' + (info['vl'] || 'NA')
+             + '] SQoffset:[' + info['sqoffset'] +']');
+  }
+
+  await stopSpinner('sspinner');
+  enableActions();
+  !isMfgAd && disableActions(null, 'mfgad');
+  !isBcastmode && disableActions(null, 'bcastmode');
+  !isBcastmode && setTimeout(() => { alert('To change broadcast settings, set the device to Auracast mode and start again.') }, 2000);
+  !pimin1 && disableActions(null, 'edgeai');
+  pimin1 == '48' && (getId('dev_edgeoptcreate_btn').disabled = true);
+  pimin1 == '96' && (getId('dev_edgeoptstarkey_btn').disabled = true);
+  pimin1 == '160' && (getId('dev_edgeoptdisable_btn').disabled = true);
+  getId('dev_info').hidden = false;
+  window.scrollTo({ top: 600, left: 0, behavior: 'smooth' });
+  return info;
+}
+
+async function setSQOffset(ele) {
+  let newoffset = ele.value;
+  if(!confirm('Confirm to set SQ Volume Offset value to ' + newoffset + ' dB?')) {
+    ele.value = ele['data-default'];
+    return;
+  }
+
+  let elearr = disableActions();
+  showSpinner('dev_spinner', 2*1000);
+  let ret = await DxSetDG({ sqoffset: newoffset });
+  await stopSpinner('dev_spinner');
+
+  if(ret > 0) {
+    console.log('SQ Volume Offset update successful');
+    AzUpdateDeviceInfo({ key1: 'sqoffset', val1: newoffset });
+    alert('Success!');
+    ele['data-default'] = newoffset;
+  } else {
+    console.log('SQ Volume Offset update failed - ' + ret);
+    alert('(0x1030) Dx Retcode ' + (ret || '0. Was the Broadcaster disconnected??'));
+    clearDeviceConfigInfo(true);
+  }
+
+  // replace enableActions() to restore the original state
+  Array.from(elearr).forEach(ele => (ele.disabled = false));
+}
+
+async function changeBBN(ele) {
+  let oldBN = ele.innerHTML;
+  let newBN = prompt('New Broadcast Name must be 4 to 30 characters long', oldBN);
+  //let newBN = prompt('New Broadcast Name must be 4 to 30 even number of characters containing only alphanumeric or _][@/.-)(#!', oldBN);
+
+  newBN && (newBN = newBN.trim());
+
+  if(newBN == oldBN || !newBN) {
+    return;
+
+  } else if(newBN.length < 4 || newBN.length > 30) {
+    alert('(0x2022) Broadcast Name must be 4 to 30 characters.');
+    return;
+
+  } else if(unescape(encodeURIComponent(newBN)).length < 4 || unescape(encodeURIComponent(newBN)).length > 30) {
+    alert('(0x2024) Broadcast Name with non-ASCII characters must be 4 to 30 UTF-8 encoded bytes long.');
+    return;
+
+  //} else if(newBN.length % 2) {
+  //  alert('(0x2028) Broadcast Name must be even number of characters.');
+  //  return;
+  //
+  //} else if(newBN.match(/^[a-zA-Z0-9_\]\[@\/\.\-\)\(\#\!]+/)) {
+  //  alert('(0x2026) Broadcast Name must contain only numbers, letters or _][@/.-)(#!');
+  //
+  } else if(newBN.match(/[\,]+/)) {
+    alert('(0x2026) Broadcast Name cannot contain a comma (,) sign.');
+    return;
+  }
+
+  // TODO: accept more characters
+  // ,                                     - Not accepted by Dx AT command
+  // _][@/.-)(#!                           - consider safe
+  // ~}|{ `^\ ?>=<;: +*'&%$"               - yet to try
+  //
+  // ~}|{ `_^]\[ @?>=<;: /.-,+*)('&%$#"!   - all special visible ASCII characters in 0-127 range
+  // 
+  disableActions();
+  showSpinner('dev_spinner', 2*1000);
+
+  // Firmware before r1129 R?? cannot handle odd number of characters in AT+BBN
+  // User Raw HID command instead
+  //let ret = await DxBSrcSetBBN(newBN);
+  let ret = await DxBSrcSetBBNRaw(newBN);
+  await stopSpinner('dev_spinner');
+
+  if(ret > 0) {
+    console.log('BBN update successful and resetting device');
+    AzUpdateDeviceInfo({ key1: 'bname', val1: null });
+    alert('After changing the Broadcast Name, you need to remove this broadcast from the Saved Broadcasts section of all headphones and receivers in the QK Connect app. Then re-scan and save this broadcast with the new name.');
+    await resetSystemAndWait(10*1000, 'dev_spinner');
+  } else {
+    console.log('BBN update failed - ' + ret);
+    alert('(0x1030) Dx Retcode ' + (ret || '0. Was the Broadcaster disconnected??'));
+  }
+
+  clearDeviceConfigInfo(true);
+}
+
+async function changeBBC(ele) {
+  if(!confirm('The original QR Code and Passcode printed on the device will no longer be valid. Confirm to proceed?')) return;
+
+  let oldBBC = ele.innerHTML;
+  let newBBC = prompt('New Passcode must be 4 to 16 characters long', oldBBC);
+
+  newBBC && (newBBC = newBBC.trim());
+
+  if(newBBC == oldBBC || !newBBC) {
+    return;
+
+  } else if(newBBC.length < 4 || newBBC.length > 16) {
+    alert('(0x2032) Passcode must be 4 to 16 characters.');
+    return;
+
+  } else if(unescape(encodeURIComponent(newBBC)).length < 4 || unescape(encodeURIComponent(newBBC)).length > 16) {
+    alert('(0x2034) Passcode with non-ASCII characters must be 4 to 16 UTF-8 encoded bytes long.');
+    return;
+
+  //} else if(newBBC.match(/^[a-zA-Z0-9_\]\[@\/\.\-\)\(\#\!]+/)) {
+  //alert('(0x2056) Passcode must contain only numbers, letters or _][@/.-)(#!');
+  //
+  } else if(newBBC.match(/[\,]+/)) {
+    alert('(0x2036) Passcode cannot contain a comma (,) sign.');
+    return;
+  }
+
+  // TODO: accept more characters
+  // ,                                     - Not accepted by Dx AT command
+  // _][@/.-)(#!                           - consider safe
+  // ~}|{ `^\ ?>=<;: +*'&%$"               - yet to try
+  //
+  // ~}|{ `_^]\[ @?>=<;: /.-,+*)('&%$#"!   - all special visible ASCII characters in 0-127 range
+  // 
+  disableActions();
+  showSpinner('dev_spinner', 2*1000);
+
+  // Firmware before r1129 R?? cannot handle odd number of characters in AT+BBN
+  // Use Raw HID command instead
+  //let ret = await DxBSrcSetBBC(newBBC);
+  let ret = await DxBSrcSetBBCRaw(newBBC);
+  await stopSpinner('dev_spinner');
+
+  if(ret > 0) {
+    console.log('BBC update successful and resetting device');
+    AzUpdateDeviceInfo({ key1: 'bcode', val1: null });
+    await resetSystemAndWait(10*1000, 'dev_spinner');
+  } else {
+    console.log('BBC update failed - ' + ret);
+    alert('(0x1030) Dx Retcode ' + (ret || '0. Was the Broadcaster disconnected??'));
+  }
+
+  clearDeviceConfigInfo(true);
+}
+
+async function toggleENC(ele, isSecBcast) {
+  // toggle encryption
+  let newEnc = ele['data-enc'] == 'OPEN' ? 'ENCRYPTED' : 'OPEN';
+  let newEncText = newEnc == 'ENCRYPTED' ? 'Private Encrypted' : 'Open Unencrypted';
+  let oldSam = isSecBcast
+             ? (ele['data-sam'] == '16K' ? 0x0008 : 0x0020)
+             : (ele['data-sam'] == '32K' ? 0x0080 : 0x0800);
+  let warnmsg = (isSecBcast && newEnc == 'OPEN') || (!isSecBcast && newEnc == 'ENCRYPTED')
+              ? ''
+              : '  The broadcast LED may indicate the same status for both SQ and open HQ modes. You will need to use QK CastTool to check the current broadcast quality.';
+  if(!confirm('Confirm to set Auracast ' + (isSecBcast ? 'SQ' : 'HQ') + ' encryption to ' + newEncText + '?' + warnmsg)) return;
+
+  disableActions();
+  showSpinner('dev_spinner', 2*1000);
+  let ret = await DxSrcSetAudioConfigRaw(isSecBcast, (newEnc == 'ENCRYPTED' ? 0x04 : 0x84), oldSam);
+  await stopSpinner('dev_spinner');
+
+  if(ret > 0) {
+    console.log((isSecBcast ? 'SQ' : 'HQ') + ' Encryption update successful and resetting device');
+    AzUpdateDeviceInfo({ key1: (isSecBcast ? 'sqenc' : 'hqenc'), val1: newEnc });
+    await resetSystemAndWait(10*1000, 'dev_spinner');
+  } else {
+    console.log((isSecBcast ? 'SQ' : 'HQ') + ' Encryption update failed - ' + ret);
+    alert('(0x1030) Dx Retcode ' + (ret || '0. Was the Broadcaster disconnected??'));
+  }
+
+  clearDeviceConfigInfo(true);
+}
+
+async function toggleSAM(ele, isSecBcast) {
+  // do not offer yet changing HQ (primary) broadcast sampling rate
+  if(!isSecBcast) return;
+
+  // toggle sampling rate
+  let newSam = isSecBcast
+             ? (ele['data-sam'] == '16K' ? 0x0020 : 0x0008)
+             : (ele['data-sam'] == '32K' ? 0x0800 : 0x0080);
+  let newSamText = isSecBcast
+             ? (newSam == 0x0020 ? '24K' : (newSam == 0x0008 ? '16K' : 'UNKNOWN'))
+             : (newSam == 0x0800 ? '48K' : (newSam == 0x0080 ? '32K' : 'UNKNOWN'));
+  let oldEnc = ele['data-enc'];
+  let warnmsg = isSecBcast
+              ? (newSam == 0x0008 ? '  16K sampling rate is lower quality and not generally recommended.' : '')
+              : (newSam == 0x0080 ? '  32K sampling rate is a non-popuplar option and not generally recommended.' : '');
+  if(!confirm('Confirm to set Auracast ' + (isSecBcast ? 'SQ' : 'HQ') + ' sampling rate to ' + newSamText + '?' + warnmsg)) return;
+
+  disableActions();
+  showSpinner('dev_spinner', 2*1000);
+  let ret = await DxSrcSetAudioConfigRaw(isSecBcast, (oldEnc == 'ENCRYPTED' ? 0x04 : 0x84), newSam);
+  await stopSpinner('dev_spinner');
+
+  if(ret > 0) {
+    console.log((isSecBcast ? 'SQ' : 'HQ') + ' Sampling rate update successful and resetting system');
+    AzUpdateDeviceInfo({ key1: (isSecBcast ? 'sqsam' : 'hqsam'), val1: newSamText });
+    await resetSystemAndWait(10*1000, 'dev_spinner');
+  } else {
+    console.log((isSecBcast ? 'SQ' : 'HQ') + ' Sampling rate update failed - ' + ret);
+    alert('(0x1030) Dx Retcode ' + (ret || '0. Was the Broadcaster disconnected??'));
+  }
+
+  clearDeviceConfigInfo(true);
+}
+
+async function toggleJParty(ele, forceenable) {
+  // TODO - an approach to accomodate both input checkbox and enable/disable buttons
+  //        but need to verify if it really works for both
+  forceenable !== null && (ele.checked = !forceenable);
+
+  // toggle J-Party Compatibility Mode
+  let newJParty = !ele.checked;
+  let newJPartyText = ele.checked ? 'disable' : 'enable';
+  let isbcast = getId('dev_mode')['data-audiomode'] == 'BROADCAST';
+  let ishq = getId('dev_mode')['data-bcastqly'] == 'HQ';
+  let ishqenc = getId('dev_hqcfg')['data-enc'] == 'ENCRYPTED';
+
+  let warnmsg = newJParty ? '\n\nJ-Party Compatibility Mode is an experimental feature designed to improve compatibility with certain Auracast speakers currently on the market. We cannot guarantee its suitability. Please use this feature with caution. You may disable it at any time.' : '';
+  if(!confirm('Confirm to ' + newJPartyText + ' J-Party Compatibility Mode?' + warnmsg)) return;
+  if(newJParty && (!isbcast || !ishq || ishqenc) && !confirm('J-Party speakers can only join Open Unencrypted HQ Broadcast. Let\'s set the device to Auracast HQ mode and change HQ Config to 48K OPEN.')) return;
+
+  disableActions();
+  showSpinner('dev_spinner', 2*1000);
+  let ret = await DxSrcSetJParty(newJParty, true);
+  await stopSpinner('dev_spinner');
+
+  if(ret > 0) {
+    console.log((newJParty ? 'Enabling' : 'Disabling') + ' J-Party update successful, set mode and resetting device');
+    AzUpdateDeviceInfo({ key1: 'jparty', val1: (newJParty ? 'ENABLED' : 'DISABLED') });
+    newJParty && alert('If the J-Party speaker has previously joined another Auracast source before (e.g. another J-Party speaker playing music), make sure that source is switched off. Otherwise, the speaker will keep looking for the old source instead of this Broadcaster.');
+
+    // set HQ broadcast mode
+    await DxSrcSetMode('2', '2', '0');
+
+    await resetSystemAndWait(10*1000, 'dev_spinner');
+  } else {
+    console.log((newJParty ? 'Enabling' : 'Disabling') + ' J-Party update failed - ' + ret);
+    alert('(0x1030) Dx Retcode ' + (ret || '0. Was the Broadcaster disconnected??'));
+  }
+
+  clearDeviceConfigInfo(true);
+}
+
+async function toggleEdgeOptimized(ele, mode) {
+  let newEdgeOptimized = mode !== null;
+  let newEdgeOptimizedText = mode === null ? 'disable' : ('enable' + (mode == 'create' ? ' Enhanced' : ''));
+  let isbcast = getId('dev_mode')['data-audiomode'] == 'BROADCAST';
+  let issq = getId('dev_mode')['data-bcastqly'] == 'SQ';
+  let issqenc = getId('dev_sqcfg')['data-enc'] == 'ENCRYPTED';
+
+  let warnmsg = newEdgeOptimized ? '\n\nEdge Optimization is a setting that attempts to resolve audio dropouts and disruptions occasionally experienced by Starkey Edge AI hearing aids users.' : '';
+  if(!confirm('Confirm to ' + newEdgeOptimizedText + ' Edge Optimization?' + warnmsg)) return;
+  if(newEdgeOptimized && (!isbcast || !issq || issqenc) && !confirm('Starkey Edge AI hearing aids can only join Open Unencrypted SQ Broadcast. Let\'s set the device to Auracast SQ mode and change SQ Config to 24K OPEN.')) return;
+
+  disableActions();
+  showSpinner('dev_spinner', 2*1000);
+  let ret = await DxSrcSetEdgeOptimized(mode);
+  await stopSpinner('dev_spinner');
+
+  if(ret > 0) {
+    console.log((newEdgeOptimized ? 'Enabling' : 'Disabling') + ' Edge Optimization successful, set mode and resetting device');
+    AzUpdateDeviceInfo({ key1: 'edgeopt', val1: (mode === null ? 'A0' : (mode == 'create' ? '30 AI-60' : '60 AI-60')) });
+    newEdgeOptimized && alert('Put back the hearing aids into the charge case and try the new setting after device reboot.');
+
+    // set SQ broadcast mode
+    await DxSrcSetMode('2', '2', '1');
+
+    await resetSystemAndWait(10*1000, 'dev_spinner');
+  } else {
+    console.log((newEdgeOptimized ? 'Enabling' : 'Disabling') + ' Edge Optimization failed - ' + ret);
+    alert('(0x1030) Dx Retcode ' + (ret || '0. Was the Broadcaster disconnected??'));
+  }
+
+  clearDeviceConfigInfo(true);
+}
+
+function showQRCode() {
+  let bdaddr = getId('dev_sn').innerHTML;
+  let bcastid = getId('dev_bcastid').innerHTML;
+  let bid = bcastid.replace(/^.*-\s*0x([0-9A-Fa-f]+)$/, '$1');
+  let aid = bcastid.replace(/^0x([0-9A-Fa-f]+)\s*\-.*/, '$1');
+  let bname = getId('dev_bcastname').innerHTML;
+  let bcode = getId('dev_bcastcode').innerHTML;
+  let isbcast = getId('dev_mode')['data-audiomode'] == 'BROADCAST';
+  let ishq = getId('dev_mode')['data-bcastqly'] == 'HQ';
+
+  let pai = 'FFFF';         // FFFF signifies an unknown PA_Interval value
+  let numsubgrounp = '1';   // 1 subgroup in BIG, can be omitted
+  let numbis = '2';         // 2 BIS in subgroup, can be omitted
+  let bissync = '3';        // sync to BIS 0 && 1. FFFFFFFF indicates no preference.
+
+  let bauri = 'BLUETOOTH:UUID:184F;BN:<bn>;AT:0;AD:<bdaddr>;AS:<aid>;BI:<bid>;BC:<bcode>;HQ:<ishq>;SQ:<issq>;PI:<pai>;NS:<numsubgrounp>;NB:<numbis>;BS:<bissync>;;'
+            .replace('<bdaddr>', bdaddr)
+            .replace('<aid>', aid)
+            .replace('<bid>', bid)
+            .replace('<bn>', bname.length > 3 ? btoa(bname) : 'Broadcast Source')
+            .replace('<bcode>', bcode.length > 3 ? btoa(bcode) : '')
+            .replace('<ishq>', ishq ? '1' : '0')
+            .replace('<issq>', ishq ? '0' : '1')
+            .replace('<pai>', pai)
+            .replace('<numsubgrounp>', numsubgrounp)
+            .replace('<numbis>', numbis)
+            .replace('<bissync>', bissync);
+
+  console.log('BAURI', bauri);
+
+  openModal('qrcode-container');
+  getId('qrcode').innerHTML = '';
+  const qrcode = new QRCode('qrcode', {
+    width: 128,
+    height: 128,
+    colorDark : "#000000",
+    colorLight : "#ffffff",
+    //typeNumber : 4,
+    correctLevel : QRCode.CorrectLevel.H  // L, M, Q, H
+  });
+  qrcode.makeCode(bauri);
+}
+
+function addQRCodeQuietZone(dataUrl, borderWidth = 20, callback) {
+  const img = new Image();
+  img.onload = function() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size: original image size + border on all sides
+    canvas.width = img.width + borderWidth * 2;
+    canvas.height = img.height + borderWidth * 2;
+    
+    // Fill canvas with white (border color)
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw original image centered with offset for border
+    ctx.drawImage(img, borderWidth, borderWidth);
+    
+    // Get new data URL with border
+    const newDataUrl = canvas.toDataURL('image/png');
+    callback(newDataUrl);
+  }
+  img.src = dataUrl;
+}
+
+function saveQRCode(eid) {
+  const filename = 'qrcode.png';
+  const dataUrl = document.querySelector('#' + eid + ' img').src;
+
+  addQRCodeQuietZone(dataUrl, 20, function(newDataUrl) {
+    const a = document.createElement('a');
+    a.href = newDataUrl;
+    a.download = filename;  // Android Chrome: downloads directly
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+}
+</script>
+
+<style type="text/css">
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+
+/*
+ * -- BASE STYLES --
+ * Most of these are inherited from Base, but I want to change a few.
+ */
+body {
+    line-height: 1.7em;
+    color: #7f8c8d;
+    font-size: 13px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+label {
+    color: #34495e;
+}
+
+.pure-img-responsive {
+    max-width: 100%;
+    height: auto;
+}
+
+
+/*
+ * -- LAYOUT STYLES --
+ * These are some useful classes which I will need
+ */
+.l-box {
+    padding: 1em;
+}
+
+.l-box-lrg {
+    padding: 2em;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.is-center {
+    text-align: center;
+}
+
+
+/*
+ * -- PURE FORM STYLES --
+ * Style the form inputs and labels
+ */
+.pure-form label {
+    margin: 1em 0 0;
+    font-weight: bold;
+    font-size: 100%;
+}
+
+.pure-form input[type] {
+    border: 2px solid #ddd;
+    box-shadow: none;
+    font-size: 100%;
+    width: 100%;
+    margin-bottom: 1em;
+}
+
+
+/*
+ * -- PURE BUTTON STYLES --
+ * I want my pure-button elements to look a little different
+ */
+.pure-button {
+    background-color: #1f8dd6;
+    color: white;
+    padding: 0.5em 2em;
+    border-radius: 5px;
+}
+
+a.pure-button-primary {
+    background: white;
+    color: #1f8dd6;
+    border-radius: 5px;
+    font-size: 120%;
+}
+
+
+/*
+ * -- MENU STYLES --
+ * I want to customize how my .pure-menu looks at the top of the page
+ */
+.home-menu {
+    padding: 0.5em;
+    text-align: center;
+    box-shadow: 0 1px 1px rgba(0,0,0, 0.10);
+}
+.home-menu {
+    background: #2d3e50;
+}
+.pure-menu.pure-menu-fixed {
+    /* Fixed menus normally have a border at the bottom. */
+    border-bottom: none;
+    /* I need a higher z-index here because of the scroll-over effect. */
+    z-index: 4;
+}
+
+.home-menu .pure-menu-heading {
+    color: white;
+    font-weight: 400;
+    font-size: 120%;
+}
+
+.home-menu .pure-menu-selected a {
+    color: white;
+}
+
+.home-menu a {
+    color: #6FBEF3;
+}
+.home-menu li a:hover,
+.home-menu li a:focus {
+    background: none;
+    border: none;
+    color: #AECFE5;
+}
+
+
+/*
+ * -- SPLASH STYLES --
+ * This is the blue top section that appears on the page.
+ */
+.splash-container {
+    /* background: #1f8dd6; */
+    background: rgb(0,120,212);
+    z-index: 1;
+    overflow: hidden;
+    /* The following styles are required for the "scroll-over" effect */
+    width: 100%;
+    height: 88%;
+    top: 0;
+    left: 0;
+    position: fixed !important;
+}
+
+.splash {
+    /* absolute center .splash within .splash-container */
+    width: 80%;
+    height: 50%;
+    margin: auto;
+    position: absolute;
+    top: 10px; left: 0; bottom: 0; right: 0;
+    text-align: center;
+    /* text-transform: uppercase; */
+}
+
+/* This is the main heading that appears on the blue section */
+.splash-head {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+    border: 3px solid white;
+    padding: 1em 1.6em;
+    font-weight: 100;
+    border-radius: 5px;
+    line-height: 1em;
+}
+
+/* This is the subheading that appears on the blue section */
+.splash-subhead {
+    color: white;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+}
+
+
+/*
+ * -- CONTENT STYLES --
+ * This represents the content area (everything below the blue section)
+ */
+.content-wrapper {
+    /* These styles are required for the "scroll-over" effect */
+    position: absolute;
+    top: 87%;
+    width: 100%;
+    min-height: 12%;
+    z-index: 2;
+    background: white;
+}
+
+/* We want to give the content area some more padding */
+.content {
+    padding: 1em 1em 3em;
+}
+
+/* This is the class used for the main content headers (<h2>) */
+.content-head {
+    font-weight: 400;
+    /* text-transform: uppercase; */
+    letter-spacing: 0.1em;
+    margin: 2em 0 1em;
+}
+
+/* This is a modifier class used when the content-head is inside a ribbon */
+.content-head-ribbon {
+    color: white;
+}
+
+/* This is the class used for the content sub-headers (<h3>) */
+.content-subhead {
+    color: #1f8dd6;
+}
+.content-subhead i {
+    margin-right: 7px;
+}
+
+/* This is the class used for the dark-background areas. */
+.ribbon {
+    background: #2d3e50;
+    color: #aaa;
+}
+
+/* This is the class used for the footer */
+.footer {
+    background: #111;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+
+/*
+ * -- MODAL DIALOG STYLES --
+ * Pop up modal dialog.
+ */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* translucent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+.modal-content {
+    background: white;
+    padding: 2em;
+    border-radius: 6px;
+    max-width: 90%;
+    width: min(560px, 90vw);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+    text-align: center;
+}
+
+.modal-content iframe {
+  display: block;
+  width: 100%;
+  height: 250px;
+  border: 0;
+  box-sizing: border-box;
+}
+
+
+
+/*
+ * -- TABLET (AND UP) MEDIA QUERIES --
+ * On tablets and other medium-sized devices, we want to customize some
+ * of the mobile styles.
+ */
+@media (min-width: 48em) {
+
+    /* We increase the body font size */
+    body {
+        font-size: 16px;
+    }
+
+    /* We can align the menu header to the left, but float the
+    menu items to the right. */
+    .home-menu {
+        text-align: left;
+    }
+    .home-menu ul {
+        float: right;
+    }
+
+    /* We increase/decrease the height of the splash-container */
+    .splash-container {
+    /*  height: px; */
+       height: 90%;
+    }
+
+    /* We decrease the width of the .splash, since we have more width
+    to work with */
+    .splash {
+        width: 50%;
+        height: 50%;
+    }
+    .splash-head {
+        font-size: 250%;
+    }
+
+
+    /* We remove the border-separator assigned to .l-box-lrg */
+    .l-box-lrg {
+        border: none;
+    }
+}
+
+
+/*
+ * -- DESKTOP (AND UP) MEDIA QUERIES --
+ * On desktops and other large devices, we want to over-ride some
+ * of the mobile and tablet styles.
+ */
+@media (min-width: 78em) {
+    /* We increase the header font size even more */
+    .splash-head {
+        font-size: 300%;
+    }
+}
+
+/*
+ * -- QK CASTTOOL STYLES --
+ * 
+ */
+#dev_info {
+    height: 90%;
+    min-height: 650px;
+}
+
+.col3c {
+  display: flex;
+  align-items: stretch;
+}
+
+.c3col-spacer {
+  flex: 0 0 20px;
+  width: 20px;
+}
+
+.c3col-left {
+  flex: 1 1 0;
+  text-align: right;
+}
+
+.c3col-right {
+  flex: 1 1 0;
+}
+
+@media (max-width: 47.99em) {
+  .c3col-col {
+    display: block;
+  }
+  .c3col-spacer {
+    display: none;
+  }
+  .c3col-left {
+    text-align: left;
+  }
+}
+</style>
+
+<div class="header">
+  <div class="home-menu pure-menu pure-menu-horizontal pure-menu-fixed">
+      <a class="pure-menu-heading" href="https://qkaudio.dxcloud.io/api/content/qk_casttool.html">QKAudio</a>
+      <ul class="pure-menu-list">
+<!--
+          <li class="pure-menu-item pure-menu-selected"><a href="#" class="pure-menu-link">Home</a></li>
+-->
+          <li class="pure-menu-item"><a href="#" onclick="switchIframe(getId('legal-container'), getId('legal-privacy')); return false" class="pure-menu-link">Privacy</a></li>
+          <li class="pure-menu-item"><a href="#" onclick="switchIframe(getId('legal-container'), getId('legal-eula')); return false" class="pure-menu-link">Terms of Use</a></li>
+      </ul>
+  </div>
+</div>
+
+<div id="legal-container" class="modal-overlay">
+  <div class="modal-content">
+    <h2>Legal Notice</h2>
+    <p>
+      &#x00A9; <script>document.write(new Date().getFullYear())</script> GT-tronics. All rights reserved.
+    </p>
+    <div style="text-align:center">
+      <iframe id="legal-privacy" src="https://qkaudio.dxcloud.io/api/content/privacy.html" loading="eager" hidden></iframe>
+      <iframe id="legal-eula" src="https://qkaudio.dxcloud.io/api/content/eula.html" loading="eager" hidden></iframe>
+    </div>
+    <div style="margin-top:20px">
+      <button class="pure-button pure-button-primary" onclick="closeModal(this.closest('.modal-overlay').id)">Close</button>
+    </div>
+  </div>
+<!--
+  <script> activitytrack == 'wix' && document.write('<iframe id="wix-tracker" src="https://www.qkaudio.com/webapp-casttool" hidden></iframe>')</script>
+-->
+</div>
+
+<div class="splash-container">
+  <div class="splash">
+    <h1 class="splash-head">QK CastTool v1.14</h1>
+    <p class="splash-subhead">
+      Use a USB data cable and plug the Broadcaster or Simulcaster into this computer, then click
+    </p>
+    <p>
+      <button id="getstarted" class="pure-button pure-button-primary action" onclick="getTxDeviceConfigInfo(); return false">GET STARTED</button>
+    </p>
+    <p class="splash-subhead" style="margin-top:20px">
+      Select the device to connect from the pop-up, if asked.
+    </p>
+    <p class="splash-subhead">
+      <div id="sspinner"></div>
+    </p>
+  </div>
+</div>
+
+<div id="dev_info" class="content-wrapper" hidden>
+  <div class="content">
+    <h2 class="content-head is-center">Device Information</h2>
+
+    <div class="pure-g c3col">
+      <div class="pure-u-1 c3col-left">Serial Number:</div>
+      <div class="c3col-spacer"></div>
+      <div class="pure-u-1 c3col-right"><span id="dev_sn" class="devinfo"></span></div>
+    </div>
+    <div class="pure-g c3col">
+      <div class="pure-u-1 c3col-left">Model:</div>
+      <div class="c3col-spacer"></div>
+      <div class="pure-u-1 c3col-right"><span id="dev_model" class="devinfo"></span></div>
+    </div>
+    <div class="pure-g c3col">
+      <div class="pure-u-1 c3col-left">Firmware:</div>
+      <div class="c3col-spacer"></div>
+      <div class="pure-u-1 c3col-right"><span id="dev_fw" class="devinfo"></span></div>
+    </div>
+    <div class="pure-g c3col">
+      <div class="pure-u-1 c3col-left">Classic PDL:</div>
+      <div class="c3col-spacer"></div>
+      <div class="pure-u-1 c3col-right"><span id="dev_pdl" class="devinfo"></span></span></div>
+    </div>
+
+    <div class="pure-g" style="height:1rem" aria-hidden="true"></div>
+
+    <div class="pure-g c3col">
+      <div class="pure-u-1 c3col-left">Current Mode:</div>
+      <div class="c3col-spacer"></div>
+      <div class="pure-u-1 c3col-right"><span id="dev_mode" class="devinfo" data-audiomode="" data-bcastqly=""></span></div>
+    </div>
+    <div class="pure-g c3col">
+      <div class="pure-u-1 c3col-left">Auracast HQ Config:</div>
+      <div class="c3col-spacer"></div>
+      <div class="pure-u-1 c3col-right"><span id="dev_hqcfg" class="devinfo" data-sam="" data-enc=""></span>&nbsp; <button id="dev_hqenc_btn" type="button" class="action bcastmode bcfg" onclick="toggleENC(getId('dev_hqcfg'), false)" title="Change HQ Encryption Setting">&#x1F517;</button></div>
+    </div>
+    <div class="pure-g c3col">
+      <div class="pure-u-1 c3col-left">Auracast SQ Config:</div>
+      <div class="c3col-spacer"></div>
+      <div class="pure-u-1 c3col-right"><span id="dev_sqcfg" class="devinfo" data-sam="" data-enc=""></span>&nbsp; <button id="dev_sqenc_btn" type="button" class="action bcastmode bcfg" onclick="toggleENC(getId('dev_sqcfg'), true)" title="Change SQ Encryption Setting">&#x1F517;</button>&nbsp;<button id="dev_sqsam_btn" type="button" class="action bcastmode bcfg" onclick="toggleSAM(getId('dev_sqcfg'), true)" title="Change SQ Audio Sample Rate">&#x223F;</button></div>
+    </div>
+    <div class="pure-g c3col">
+      <div class="pure-u-1 c3col-left">Broadcast ID:</div>
+      <div class="c3col-spacer"></div>
+      <div class="pure-u-1 c3col-right"><span id="dev_bcastid" class="devinfo"></span></div>
+    </div>
+    <div class="pure-g c3col">
+      <div class="pure-u-1 c3col-left">Broadcast Name:</div>
+      <div class="c3col-spacer"></div>
+      <div class="pure-u-1 c3col-right"><span id="dev_bcastname" class="devinfo"></span>&nbsp; <button id="dev_bcastname_btn" type="button" class="action basicedit bcastmode" onclick="changeBBN(getId('dev_bcastname'))" title="Change Broadcast Name">&#x270E;</button>&nbsp; <button id="dev_showqrcode_btn" type="button" class="action basicedit bcastmode" onclick="showQRCode()" title="Show Bluetooth SIG QR Code for Broadcast Assistant apps that support QR code scanning">&#x25A3;</button></div>
+    </div>
+    <div class="pure-g c3col">
+      <div class="pure-u-1 c3col-left">Passcode:</div>
+      <div class="c3col-spacer"></div>
+      <div class="pure-u-1 c3col-right"><span id="dev_bcastcode" class="devinfo"></span>&nbsp; <button id="dev_bcastcode_btn" type="button" class="action basicedit bcastmode" onclick="changeBBC(getId('dev_bcastcode'))" title="Change Passcode (effective only if the broadcast is set to ENCRYPTED)">&#x270E;</button></div>
+    </div>
+
+    <div class="pure-g" style="height:1rem" aria-hidden="true"></div>
+
+    <div class="pure-g c3col">
+      <div class="pure-u-1 c3col-left">Master Volume:</div>
+      <div class="c3col-spacer"></div>
+      <div class="pure-u-1 c3col-right"><span id="dev_vl" class="devinfo"></span></div>
+    </div>
+    <div class="pure-g c3col">
+      <div class="pure-u-1 c3col-left">SQ Volume Offset:</div>
+      <div class="c3col-spacer"></div>
+      <div class="pure-u-1 c3col-right"><span id="dev_sqoffset_span" class="devinfo"></span>
+        <select id="dev_sqoffset" name="dev_sqoffset" data-default="" class="devinfo action bcastmode" onchange="setSQOffset(getId('dev_sqoffset'))" title="Adjust SQ Volumme Offset to a comfortable sound level.">
+          <option value="0" selected>0</option>
+          <option value="-3">-3</option>
+          <option value="-6">-6</option>
+          <option value="-9">-9</option>
+          <option value="-12">-12</option>
+          <option value="-15">-15</option>
+          <option value="-18">-18</option>
+          <option value="-21">-21</option>
+          <option value="-24">-24</option>
+          <option value="-27">-27</option>
+          <option value="-30">-30</option>
+          <option value="-33">-33</option>
+          <option value="-36">-36</option>
+          <option value="-40">-40</option>
+        </select> dB &nbsp;(0 = loudest)
+      </div>
+    </div>
+    <div class="pure-g c3col">
+      <div class="pure-u-1 c3col-left">Special Features:</div>
+      <div class="c3col-spacer"></div>
+      <div class="pure-u-1 c3col-right">
+        <span hidden><input id="dev_jparty_cb" type="checkbox" class="devinfo bcastmode mfgad" onchange="toggleJParty(this)" title="Enable or disable J-Party Compatibility Mode">&nbsp;</span>
+        <div>
+          J-Party Mode&nbsp;
+        <button id="dev_jpartyenable_btn" type="button" class="action bcastmode mfgad" onclick="toggleJParty(this, true)" title="Enable J-Party Compatibility Mode. Firmware version 3.8.150+ required.">&#x2713;</button>&nbsp;
+        <button id="dev_jpartydisable_btn" type="button" class="action bcastmode mfgad" onclick="toggleJParty(this, false)" title="Disable J-Party Compatibility Mode">&#x2717;</button>
+        </div>
+        <div>
+          Edge Optimized&nbsp;
+          <button id="dev_edgeoptcreate_btn" type="button" class="action bcastmode edgeai" onclick="toggleEdgeOptimized(this, 'create')" title="Enable Enhanced Edge Optimization to minimize audio dropouts experienced by Starkey Edge AI hearing aids (0x30).">&#x2605;</button>&nbsp;
+          <button id="dev_edgeoptstarkey_btn" type="button" class="action bcastmode edgeai" onclick="toggleEdgeOptimized(this, 'starkey')" title="Enable Edge Optimization to reduce audio dropouts experienced by Starkey Edge AI hearing aids (0x60).">&#x2606;</button>&nbsp;
+          <button id="dev_edgeoptdisable_btn" type="button" class="action bcastmode edgeai" onclick="toggleEdgeOptimized(this, null)" title="Disable Edge Optimization">&#x2717;</button>
+        </div>
+      </div>
+    </div>
+    <div id="dev_spinner" class="pure-g"></div>
+
+    <div id="qrcode-container" class="modal-overlay">
+      <div class="modal-content">
+        <h2>Bluetooth SIG QR Code</h2>
+        <p>
+          Use any Broadcast Assistant that supports BSIG BAURI<br>
+          format to scan this QR Code to join the broadcast.
+        </p>
+        <div style="text-align:center">
+          <div id="qrcode" style="margin: 0px auto; background-color: white; display: inline-block;"></div>
+        </div>
+        <div style="margin-top:20px">
+          <button class="pure-button pure-button-primary" onclick="saveQRCode(this.closest('.modal-overlay').id)">Save</button>
+          &nbsp;&nbsp;
+          <button class="pure-button pure-button-primary" onclick="closeModal(this.closest('.modal-overlay').id)">Close</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<!--  Front End UI: END  -->
+
+
+
+<!--  Basic Dx UI: START  -->
+<style type="text/css">
+  #mylog {
+    font-family: Consolas,monospace;
+    font-size: 12px;
+    line-height: 1em;
+    margin: 5px;
+  }
+</style>
+<div id="atcmd">
+  <form onsubmit="connectAndSend(); return false">
+    <div id="mycaption">&nbsp;</div>
+    <br>
+    <input id="mycmd" type="text" style="width:250px" list="browserList" value="AT"> <button id="sendbtn" type="button" class="action" onclick="connectAndSend()">Send</button>
+    <datalist id="browserList">
+      <option value="AT+VS?">
+      <option value="AT+DS?">
+      <option value="AT+CR?">
+      <option value="AT+FAR">
+    </datalist>
+    &nbsp;&nbsp;
+    <button id="clearlogs" type="button" onclick="clearLogs()">Clear Log</button>
+    &nbsp;
+    <button id="resetdevice" type="button" onclick="setCmd('AT+RST'); connectAndSend();">Reset Device</button>  
+  </form>
+  <p></p>
+</div>
+<div id="mylog"></div>
+<!--  Basic Dx UI: END  -->
+
+</body></html>
