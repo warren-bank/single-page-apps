@@ -1,0 +1,89 @@
+html {
+  font-size: 10px;
+}
+body {
+  margin: 2rem;
+  font-family: Mark Pro Book,Helvetica,Arial,sans-serif;
+  font-size: 1.6rem;
+}
+body > header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+body > header > a,
+body > header > a > h1 {
+  display: inline-block;
+}
+body > header > a {
+  text-decoration: none;
+}
+body > header > a > h1 {
+  color: #ed2324;
+  font-size: 2rem;
+  margin: 0;
+}
+
+.calculator-container,
+.calculator-container > .form-container > .input-container,
+.calculator-container > .form-container > #buttons {
+  margin-bottom: 2rem;
+}
+.calculator-container > .form-container > .input-container {
+  box-shadow: 6px 5px 20px rgba(0,0,0,.1);
+  padding: 1.8rem 3rem;
+}
+.calculator-container > .form-container > .input-container > h3,
+.calculator-container > .form-container > .input-container > div,
+.calculator-container > .form-container > .input-container > div > div,
+.calculator-container > .form-container > .input-container textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+.calculator-container > .form-container > .input-container > table,
+.calculator-container > .form-container > .input-container > div {
+  margin-left: 2em;
+}
+.calculator-container > .form-container > .input-container > div > div > input,
+.calculator-container > .form-container > .input-container > div > div > label {
+  display: inline-block;
+}
+
+.calculator-container > .form-container > #buttons {
+  text-align: center;
+}
+.calculator-container > .form-container > #buttons > button {
+  display: inline-block;
+  color: #ed2324;
+  font-weight: bold;
+  padding: 1.4rem 5.5rem;
+  font-size: 1.8rem;
+  background-color: #fff;
+  border: none;
+  outline: none;
+  box-shadow: inset 0 0 0 3px;
+}
+.calculator-container > .form-container > #buttons > button:hover {
+  box-shadow: inset 0 0 0 5px;
+  cursor: pointer;
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+
+.calculator-container > .results-container {
+  margin: 0 3rem;
+}
+
+.information-container {
+  border-top: 1px solid black;
+  padding-top: 2em;
+}
+.information-container > table {
+  margin-left: 2em;
+  border-collapse: collapse;
+}
+.information-container > table th,
+.information-container > table td {
+  border: 1px solid black;
+  padding: 0.5em;
+}

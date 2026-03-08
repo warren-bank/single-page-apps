@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Bed Linen GSM Calculator</title>
+    <link rel="stylesheet" href="./css/style.css" />
+    <script src="./js/bed_linen_gsm_calculator.js"></script>
+    <script src="./js/event_handlers.js"></script>
+  </head>
+  <body>
+    <header>
+      <a href="https://warren-bank.github.io/single-page-apps/bed-linen-gsm-calculator/index.html">
+        <h1>Bed Linen GSM Calculator</h1>
+      </a>
+    </header>
+    <section class="calculator-container">
+      <div class="form-container">
+        <div class="input-container">
+          <h3>Input Data:</h3>
+          <table>
+            <tr>
+              <td>Width</td>
+              <td><input id="input_width" value="" /></td>
+              <td>
+                <select id="select_common_dimensions">
+                  <option value="0">-- common linen dimensions --</option>
+
+                  <option value="flat_twin">flat sheet: Twin</option>
+                  <option value="flat_twin_xl">flat sheet: Twin XL</option>
+                  <option value="flat_full">flat sheet: Full/Double</option>
+                  <option value="flat_queen">flat sheet: Queen</option>
+                  <option value="flat_king">flat sheet: King</option>
+                  <option value="flat_king_ca">flat sheet: California King</option>
+
+                  <option value="fitted_twin">fitted sheet: Twin</option>
+                  <option value="fitted_twin_xl">fitted sheet: Twin XL</option>
+                  <option value="fitted_full">fitted sheet: Full/Double</option>
+                  <option value="fitted_queen">fitted sheet: Queen</option>
+                  <option value="fitted_king">fitted sheet: King</option>
+                  <option value="fitted_king_ca">fitted sheet: California King</option>
+                </select>
+              </td>
+              <td>
+                <a target="_blank" href="./img/bed_sheet_sizes_chart.jpg">
+                  <img src="https://warren-bank.github.io/Android-WebMonkey/img/open-external-website.png" />
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td>Length</td>
+              <td><input id="input_length" value="" /></td>
+              <td colspan="2"></td>
+            </tr>
+            <tr>
+              <td>Weight</td>
+              <td><input id="input_weight" value="" /></td>
+              <td colspan="2"></td>
+            </tr>
+          </table>
+          <h3>Input Units:</h3>
+          <div>
+            <div>
+              <input name="units" type="radio" value="imperial" checked />
+              <label>Imperial: inches, ounces</label>
+            </div>
+            <div>
+              <input name="units" type="radio" value="metric" />
+              <label>Metric: centimeters, grams</label>
+            </div>
+          </div>
+        </div>
+        <div id="buttons">
+          <button type="submit">Calculate GSM</button>
+        </div>
+      </div>
+      <pre class="results-container"></pre>
+    </section>
+    <section class="information-container">
+      <h3>GSM Guide:</h3>
+      <table>
+        <tr>
+          <th>GMS</th>
+          <th>fabric weight</th>
+        </tr>
+        <tr>
+          <td>30 - 150</td>
+          <td>light</td>
+        </tr>
+        <tr>
+          <td>150 - 350</td>
+          <td>medium</td>
+        </tr>
+        <tr>
+          <td>350+</td>
+          <td>heavy</td>
+        </tr>
+      </table>
+    </section>
+  </body>
+</html>
