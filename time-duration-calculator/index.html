@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js bg-fixed bg-gray-900 bg-gradient-to-br from-gray-900 via-gray-800 to-slate-900 text-white">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="32x32" href="./icons/time-duration-calculator_32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./icons/time-duration-calculator_16x16.png">
+    <title>Time Duration Calculator - Precise Date & Time Difference Tool</title>
+    <meta name="description" content="A precise tool to calculate the time difference between two dates.">
+
+    <script>
+        !function(t,e){"use strict";t=t||"docReady",e=e||window;var n=[],a=!1,o=!1;function c(){if(!a){a=!0;for(var t=0;t<n.length;t++)n[t].fn.call(window,n[t].ctx);n=[]}}function d(){"complete"===document.readyState&&c()}e[t]=function(t,e){if("function"!=typeof t)throw TypeError("callback for docReady(fn) must be a function");if(a){setTimeout(function(){t(e)},1);return}n.push({fn:t,ctx:e}),"complete"!==document.readyState&&(document.attachEvent||"interactive"!==document.readyState)?o||(document.addEventListener?(document.addEventListener("DOMContentLoaded",c,!1),window.addEventListener("load",c,!1)):(document.attachEvent("onreadystatechange",d),window.attachEvent("onload",c)),o=!0):setTimeout(c,1)}}("docReady",window),function(t){let e=t.querySelector?t.querySelector("html"):t.body.parentNode||t.head.parentNode||t.children||t.all[0];e.classList.remove("no-js"),e.classList.add("js"),docReady(function(){setTimeout(function(){e.classList.add("js-loaded")},500)})}(document||window.document);
+    </script>
+    <style>
+        html,body{position:relative;overscroll-behavior-y:contain;overscroll-behavior:contain;height:100%;touch-action:pan-x pan-y}#loading{display:none;background:#6366f1;position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999}#loading .ripple-loading,#loading .ripple-loading div{box-sizing:border-box}#loading .ripple-loading{position:relative;width:80px;height:80px;left:50%;top:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%)}#loading .ripple-loading div{position:absolute;border:4px solid #e8202e;opacity:1;border-radius:50%;-webkit-animation:1s cubic-bezier(0,.2,.8,1) infinite rippler;animation:1s cubic-bezier(0,.2,.8,1) infinite rippler}#loading .ripple-loading div:nth-child(2){-webkit-animation-delay:-.5s;animation-delay:-.5s;border-color:#ece717}@-webkit-keyframes rippler{0%,4.9%{top:36px;left:36px;width:8px;height:8px;opacity:0}5%{top:36px;left:36px;width:8px;height:8px;opacity:1}100%{top:0;left:0;width:80px;height:80px;opacity:0}}@keyframes rippler{0%,4.9%{top:36px;left:36px;width:8px;height:8px;opacity:0}5%{top:36px;left:36px;width:8px;height:8px;opacity:1}100%{top:0;left:0;width:80px;height:80px;opacity:0}}html.js #loading{display:block}html.js.js-loaded #app{display:-ms-flexbox;display:flex;-ms-flex-direction:column;flex-direction:column;}html.js #app,html.js.js-loaded #loading,html.no-js #app{display:none}
+    </style>
+
+    <!-- Stylesheet -->
+    <link href="./app.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen">
+
+    <!-- Loading -->
+    <div id="loading">
+        <div class="ripple-loading">
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+
+    <!-- App -->
+    <div id="app" class="w-full max-w-2xl mx-auto bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl p-6 md:p-8 space-y-8 p-4">
+        
+        <!-- Header -->
+        <header id="header" class="header">
+            <section class="container text-center">
+                <h1 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-300 via-blue-400 to-purple-500"><span class="block md:inline text-center"> Age & Duration</span> <span class="block md:inline text-center">Calculator</span></h1>
+                <p class="text-gray-400 mt-2">Calculate the precise duration between two moments in time.</p>
+            </section>
+        </header>
+
+        <!-- Main -->
+        <main id="main" class="main">
+            <section class="container">
+                <!-- Input Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- From Date -->
+                    <div>
+                        <label for="fromDate" class="block text-sm font-medium text-gray-300 mb-2 leading-[2]">From</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <input type="datetime-local" id="fromDate" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5" required>
+                        </div>
+                    </div>
+                    <!-- To Date -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2 leading-[2]">
+                            <label for="toDate" class="block text-sm font-medium text-gray-300 leading-[2]">To</label>
+                            <div class="flex items-center space-x-2 leading-[2]">
+                                <label for="useCurrentTime" class="whitespace-nowrap leading-[1]">
+                                    <span class="text-xs text-gray-400 leading-[1]">Use Current Time</span>
+                                </label>
+                                <label class="switch leading-[1]">
+                                    <input type="checkbox" id="useCurrentTime" class=" leading-[1]" checked>
+                                    <span class="slider leading-[1]"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <input type="datetime-local" id="toDate" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div id="results" class="space-y-6 pt-4">
+                    <!-- Main Result -->
+                    <div id="mainResultContainer" class="text-center bg-gray-900/60 p-6 rounded-xl result-card hidden">
+                        <h2 class="text-lg font-medium text-gray-400 mb-2">Total Duration</h2>
+                        <div id="mainResult" class="flex flex-wrap items-baseline justify-center gap-x-4 gap-y-2">
+                            <!-- Dynamic content here -->
+                        </div>
+                    </div>
+
+                    <!-- Detailed Results -->
+                    <div id="detailedResultsContainer" class="result-card hidden">
+                        <h3 class="text-center text-lg font-medium text-gray-400 mb-4">Duration in other units</h3>
+                        <div id="detailedResults" class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 justify-center items-center content-center">
+                            <!-- Dynamic content here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer id="footer" class="footer">
+            <section class="container">
+                <div class="footer-content flex flex-col justify-between items-center pt-4 md:flex-row">
+                    <div class="copyright text-center md:text-left">
+                        <span>Designed &amp; Developed by:</span> <a href="https://mamedul.github.io"
+                            title="Full-Stack Developer & WordPress Expert. Specializing in WooCommerce, PHP, MySQL, and modern web development. Creating exceptional digital experiences since 2017.">MAMEDUL
+                            ISLAM</a>
+                    </div>
+                    <div class="social-links text-center md:text-right">
+                        <a href="https://wa.me/8801847406830" class="social-link" target="_blank"
+                            style="cursor: pointer;">
+                            <svg class="icon" width="24px" height="24px" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                <path
+                                    d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7 .9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z" />
+                            </svg>
+                        </a>
+                        <a href="https://www.fiverr.com/mamedul" class="social-link" target="_blank"
+                            style="cursor: pointer;">
+                            <svg class="icon" width="24px" height="24px" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                <path
+                                    d="M184 48l144 0c4.4 0 8 3.6 8 8l0 40L176 96l0-40c0-4.4 3.6-8 8-8zm-56 8l0 40L64 96C28.7 96 0 124.7 0 160l0 96 192 0 128 0 192 0 0-96c0-35.3-28.7-64-64-64l-64 0 0-40c0-30.9-25.1-56-56-56L184 0c-30.9 0-56 25.1-56 56zM512 288l-192 0 0 32c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32-14.3-32-32l0-32L0 288 0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-128z" />
+                            </svg>
+                        </a>
+                        <a href="https://www.linkedin.com/in/mamedul/" class="social-link" target="_blank"
+                            style="cursor: pointer;">
+                            <svg class="icon" width="24px" height="24px" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                <path
+                                    d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z" />
+                            </svg>
+                        </a>
+                        <a href="https://www.github.com/mamedul/" class="social-link" target="_blank"
+                            style="cursor: pointer;">
+                            <svg class="icon" width="24px" height="24px" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512">
+                                <path
+                                    d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3 .3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5 .3-6.2 2.3zm44.2-1.7c-2.9 .7-4.9 2.6-4.6 4.9 .3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3 .7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3 .3 2.9 2.3 3.9 1.6 1 3.6 .7 4.3-.7 .7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3 .7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3 .7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z" />
+                            </svg>
+                        </a>
+                        <a href="https://www.x.com/mamedul/" class="social-link" target="_blank"
+                            style="cursor: pointer;">
+                            <svg class="icon" width="24px" height="24px" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                <path
+                                    d="M389.2 48h70.6L305.6 224.2 487 464H345L233.7 318.6 106.5 464H35.8L200.7 275.5 26.8 48H172.4L272.9 180.9 389.2 48zM364.4 421.8h39.1L151.1 88h-42L364.4 421.8z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </footer>
+
+    </div>
+
+    
+    <!-- Intall Prompt -->
+    <div class="install-prompt" id="installPrompt">
+        <div class="install-content">
+            <svg width="24px" height="24px" class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 242.7-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7 288 32zM64 352c-35.3 0-64 28.7-64 64l0 32c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-32c0-35.3-28.7-64-64-64l-101.5 0-45.3 45.3c-25 25-65.5 25-90.5 0L165.5 352 64 352zm368 56a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"></path>
+            </svg>
+            <span>Install `Age Calculator` for quick access</span>
+            <button class="install-btn" id="installBtn">Install</button>
+            <button class="install-close" id="installClose">×</button>
+        </div>
+    </div>
+    
+    <!-- main javascript -->
+    <script src="./app.js"></script>
+</body>
+</html>
