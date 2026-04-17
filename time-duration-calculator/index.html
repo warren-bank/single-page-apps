@@ -52,7 +52,18 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- From Date -->
                     <div>
-                        <label for="fromDate" class="block text-sm font-medium text-gray-300 mb-2 leading-[2]">From</label>
+                        <div class="flex justify-between items-center mb-2 leading-[2]">
+                            <label for="fromDate" class="block text-sm font-medium text-gray-300 leading-[2]">From</label>
+                            <div class="flex items-center space-x-2 leading-[2]">
+                                <label for="fromCurrentTime" class="whitespace-nowrap leading-[1]">
+                                    <span class="text-xs text-gray-400 leading-[1]">Use Current Time</span>
+                                </label>
+                                <label class="switch leading-[1]">
+                                    <input type="checkbox" id="fromCurrentTime" class=" leading-[1]">
+                                    <span class="slider leading-[1]"></span>
+                                </label>
+                            </div>
+                        </div>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -65,11 +76,11 @@
                         <div class="flex justify-between items-center mb-2 leading-[2]">
                             <label for="toDate" class="block text-sm font-medium text-gray-300 leading-[2]">To</label>
                             <div class="flex items-center space-x-2 leading-[2]">
-                                <label for="useCurrentTime" class="whitespace-nowrap leading-[1]">
+                                <label for="toCurrentTime" class="whitespace-nowrap leading-[1]">
                                     <span class="text-xs text-gray-400 leading-[1]">Use Current Time</span>
                                 </label>
                                 <label class="switch leading-[1]">
-                                    <input type="checkbox" id="useCurrentTime" class=" leading-[1]" checked>
+                                    <input type="checkbox" id="toCurrentTime" class=" leading-[1]">
                                     <span class="slider leading-[1]"></span>
                                 </label>
                             </div>
@@ -78,7 +89,7 @@
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                             </div>
-                            <input type="datetime-local" id="toDate" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5" disabled>
+                            <input type="datetime-local" id="toDate" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5" required>
                         </div>
                     </div>
                 </div>

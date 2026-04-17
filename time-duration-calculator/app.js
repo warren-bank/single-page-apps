@@ -3,21 +3,35 @@ docReady(function () {
 	// --- DOM Elements ---
 	const fromDateInput = document.getElementById('fromDate');
 	const toDateInput = document.getElementById('toDate');
-	const useCurrentTimeCheckbox = document.getElementById('useCurrentTime');
+	const fromCurrentTimeCheckbox = document.getElementById('fromCurrentTime');
+	const toCurrentTimeCheckbox = document.getElementById('toCurrentTime');
 	const mainResultContainer = document.getElementById('mainResultContainer');
 	const detailedResultsContainer = document.getElementById('detailedResultsContainer');
 	const mainResultDiv = document.getElementById('mainResult');
 	const detailedResultsDiv = document.getElementById('detailedResults');
 
-	let timer; // For updating current time
+	let fromTimer, toTimer; // For updating current time
 
 	// --- Core Functions ---
 
 	/**
+	 * Sets the "From" date input to the current date and time.
+	 */
+	function setFromCurrentDateTime() {
+		if (fromCurrentTimeCheckbox.checked) {
+			const now = new Date();
+			// Offset the timezone to get the correct local time for the input
+			now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+			fromDateInput.value = now.toISOString().slice(0, 16);
+			calculateAndDisplay();
+		}
+	}
+
+	/**
 	 * Sets the "To" date input to the current date and time.
 	 */
-	function setCurrentDateTime() {
-		if (useCurrentTimeCheckbox.checked) {
+	function setToCurrentDateTime() {
+		if (toCurrentTimeCheckbox.checked) {
 			const now = new Date();
 			// Offset the timezone to get the correct local time for the input
 			now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -30,11 +44,11 @@ docReady(function () {
 	 * Main calculation logic.
 	 */
 	function calculateAndDisplay() {
-		const fromDate = new Date(fromDateInput.value);
-		const toDate = new Date(toDateInput.value);
+		const fromDate = fromCurrentTimeCheckbox.checked ? new Date() : new Date(fromDateInput.value);
+		const toDate = toCurrentTimeCheckbox.checked ? new Date() : new Date(toDateInput.value);
 
-		if (!fromDateInput.value || isNaN(fromDate)) {
-			// Hide results if 'from' date is invalid
+		if (!fromDateInput.value || isNaN(fromDate) || !toDateInput.value || isNaN(toDate)) {
+			// Hide results if either 'from' or 'to' date is invalid
 			mainResultContainer.classList.add('hidden');
 			detailedResultsContainer.classList.add('hidden');
 			return;
@@ -71,7 +85,7 @@ docReady(function () {
 		if (months < 0) { years--; months += 12; }
 
 		// Total units calculation
-		const totalSeconds = diff / 1000;
+		const totalSeconds = Math.ceil(diff / 1000);
 		const totalMinutes = totalSeconds / 60;
 		const totalHours = totalMinutes / 60;
 		const totalDays = totalHours / 24;
@@ -144,30 +158,48 @@ docReady(function () {
 	fromDateInput.addEventListener('change', calculateAndDisplay);
 	toDateInput.addEventListener('change', calculateAndDisplay);
 
-	useCurrentTimeCheckbox.addEventListener('change', () => {
-		if (useCurrentTimeCheckbox.checked) {
-			toDateInput.disabled = true;
-			timer = setInterval(setCurrentDateTime, 1000);
-			setCurrentDateTime();
+	fromCurrentTimeCheckbox.addEventListener('change', () => {
+		if (fromCurrentTimeCheckbox.checked) {
+			toCurrentTimeCheckbox.disabled = true;
+			fromDateInput.disabled = true;
+			fromTimer = setInterval(setFromCurrentDateTime, 1000);
+			setFromCurrentDateTime();
 		} else {
+			toCurrentTimeCheckbox.disabled = false;
+			fromDateInput.disabled = false;
+			clearInterval(fromTimer);
+		}
+	});
+
+	toCurrentTimeCheckbox.addEventListener('change', () => {
+		if (toCurrentTimeCheckbox.checked) {
+			fromCurrentTimeCheckbox.disabled = true;
+			toDateInput.disabled = true;
+			toTimer = setInterval(setToCurrentDateTime, 1000);
+			setToCurrentDateTime();
+		} else {
+			fromCurrentTimeCheckbox.disabled = false;
 			toDateInput.disabled = false;
-			clearInterval(timer);
+			clearInterval(toTimer);
 		}
 	});
 
 	// --- Initialization ---
 	function initialize() {
-		// Set a default "from" date (e.g., 20 years ago)
-		const defaultFrom = new Date();
-		defaultFrom.setFullYear(defaultFrom.getFullYear() - 20);
-		defaultFrom.setMinutes(defaultFrom.getMinutes() - defaultFrom.getTimezoneOffset());
-		fromDateInput.value = defaultFrom.toISOString().slice(0, 16);
+		// Initialize the "from" date
+		if (fromCurrentTimeCheckbox.checked) {
+			toCurrentTimeCheckbox.disabled = true;
+			fromDateInput.disabled = true;
+			fromTimer = setInterval(setFromCurrentDateTime, 1000);
+			setFromCurrentDateTime();
+		}
 
 		// Initialize the "to" date
-		if (useCurrentTimeCheckbox.checked) {
+		if (toCurrentTimeCheckbox.checked) {
+			fromCurrentTimeCheckbox.disabled = true;
 			toDateInput.disabled = true;
-			timer = setInterval(setCurrentDateTime, 1000);
-			setCurrentDateTime();
+			toTimer = setInterval(setToCurrentDateTime, 1000);
+			setToCurrentDateTime();
 		}
 
 		calculateAndDisplay();
