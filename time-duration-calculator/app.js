@@ -8,55 +8,10 @@ docReady(function () {
 	const detailedResultsContainer = document.getElementById('detailedResultsContainer');
 	const mainResultDiv = document.getElementById('mainResult');
 	const detailedResultsDiv = document.getElementById('detailedResults');
-	const installPrompt = document.getElementById('installPrompt');
-	const installBtn = document.getElementById('installBtn');
-	const installClose = document.getElementById('installClose');
 
 	let timer; // For updating current time
 
 	// --- Core Functions ---
-
-	var notifierContainer = null;
-	function showNotifier(message, type, duration) {
-		if (!notifierContainer) {
-			notifierContainer = document.createElement('div');
-			notifierContainer.className = 'notifier-container';
-			document.body.appendChild(notifierContainer);
-		}
-
-		// SVG Icons for success and error states
-		var icons = {
-			success: '<svg class="notifier-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>',
-			error: '<svg class="notifier-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>'
-		};
-
-		var notifier = document.createElement('div');
-		var notifierType = (type === 'success' || type === 'error') ? type : 'success';
-
-		notifier.className = 'notifier ' + notifierType;
-		notifier.innerHTML = icons[notifierType] + '<span>' + message + '</span>';
-
-		notifierContainer.appendChild(notifier);
-
-		// Trigger the show animation
-		setTimeout(function () {
-			notifier.classList.add('show');
-		}, 10);
-
-		var hideTimeout = duration || 3000;
-		setTimeout(function () {
-			notifier.classList.remove('show');
-			notifier.classList.add('hide');
-
-			// Remove the element from DOM after transition ends
-			setTimeout(function () {
-				if (notifier.parentNode) {
-					notifier.parentNode.removeChild(notifier);
-				}
-			}, 500);
-		}, hideTimeout);
-	}
-
 
 	/**
 	 * Sets the "To" date input to the current date and time.
@@ -217,85 +172,6 @@ docReady(function () {
 
 		calculateAndDisplay();
 	}
-
-	// --- PWA Service Worker Registration ---
-	if ('serviceWorker' in navigator) {
-		window.addEventListener('load', () => {
-			navigator.serviceWorker.register('sw.js', { scope: './' })
-				.then(async (registration) => {
-					
-					console.log('ServiceWorker registration successful with scope: ', registration.scope);
-
-					// Wait until this page is controlled by a SW
-					await new Promise(resolve => {
-						if (navigator.serviceWorker.controller) {
-							resolve();
-						} else {
-							navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true });
-						}
-					});
-
-					navigator.serviceWorker.addEventListener('message', (event) => {
-						console.log(event);
-						if (event.data && event.data.type === 'UPDATE_AVAILABLE' && event.data.version) {
-							this.showNotifier('Update available. New version: ' + event.data.version, 'success', 1500);
-						}
-						if (event.data && event.data.type === 'FORCE_RELOAD') {
-							if (this.isPWA()) {
-								this.showNotifier('Please exit the app & then re-open to update', 'success', 6000);
-							} else {
-								this.showNotifier('Please reload/refresh the tab to update', 'success', 6000);
-							}
-						}
-					});
-
-					navigator.serviceWorker.controller.postMessage({
-						type: 'CHECK_VERSION'
-					});
-
-					if (navigator.storage && navigator.storage.persist) {
-						navigator.storage.persist().then(function (granted) {
-							if (granted) {
-								console.log("Storage will not be cleared except by user action");
-							} else {
-								console.log("Storage may be cleared by the browser under pressure");
-							}
-						});
-					}
-				})
-				.catch(err => {
-					console.log('ServiceWorker registration failed: ', err);
-				});
-		});
-	}
-
-	// Handle install prompt
-	window.addEventListener("beforeinstallprompt", (e) => {
-		e.preventDefault()
-		installPrompt.classList.add("show");
-
-		// Install prompt
-		installBtn.addEventListener("click", async () => {
-			if (e) {
-				e.prompt();
-				const { outcome } = await e.userChoice;
-				if (outcome === "accepted") {
-					installPrompt.classList.remove("show");
-				}
-			}
-		});
-
-		// Install close
-		installClose.addEventListener("click", () => {
-			installPrompt.classList.remove("show");
-		});
-	});
-
-	// Handle app installed
-	window.addEventListener("appinstalled", () => {
-		installPrompt.classList.remove("show");
-		showNotifier("App installed successfully!", "success", 2500);
-	});
 
 	initialize();
 
