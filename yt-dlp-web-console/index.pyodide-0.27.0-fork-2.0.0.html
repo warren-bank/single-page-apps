@@ -278,6 +278,14 @@
             def modified_urlopen(url, *args, **kwargs):
                 if isinstance(url, pyodide_http._urllib.urllib.request.Request):
                     url.full_url = prevent_mixed_content(url.full_url)
+
+                    # forbidden request headers:
+                    #   https://developer.mozilla.org/en-US/docs/Glossary/Forbidden_request_header
+                    forbidden_header_names = ["accept-charset", "accept-encoding", "access-control-request-headers", "access-control-request-method", "access-control-request-private-network", "connection", "content-length", "cookie", "date", "dnt", "expect", "host", "keep-alive", "origin", "referer", "set-cookie", "te", "trailer", "transfer-encoding", "upgrade", "user-agent", "via", "x-http-method", "x-http-method-override", "x-method-override"]
+                    for header_name, header_value in url.header_items():
+                      header_name = header_name.lower()
+                      if header_name.startswith("proxy-") or header_name.startswith("sec-") or header_name in forbidden_header_names:
+                        url.add_header("x-simple-modify-headers-" + header_name, header_value)
                 else:
                     url = prevent_mixed_content(url)
                 response = original_urlopen(url, *args, **kwargs)
