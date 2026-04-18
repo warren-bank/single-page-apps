@@ -229,7 +229,7 @@
 
         await pyodide.loadPackage('ssl');
         await pyodide.loadPackage('js/pyodide-0.23.2/pyodide_http-0.2.0-py3-none-any.whl');
-        await pyodide.loadPackage('whl/yt_dlp-2024.12.23-py3-none-any.whl');
+        await pyodide.loadPackage('whl/yt_dlp.whl');
 
         await pyodide.runPython(`
           import pyodide_http

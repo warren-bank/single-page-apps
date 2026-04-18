@@ -1,12 +1,13 @@
 https://pypi.org/project/yt-dlp/
 
-https://files.pythonhosted.org/packages/70/d3/dc656c921f45baaba4d439292194b5be7f48b3558fcc38941aca16fa5afa/yt_dlp-2024.12.23-py3-none-any.whl
-  date:         2024.12.23
-  size:         3.2 MB
-  requirements: Python 3
+https://pypi.org/project/yt-dlp/2026.3.17/
+https://files.pythonhosted.org/packages/cd/13/5093bcb954878e50f7217fd2ab94282b53934022e4e4a03265582da83bf5/yt_dlp-2026.3.17-py3-none-any.whl
+  date:         2026.03.17
+  size:         3.3 MB
+  requirements: Python >= 3.10
   publisher:    github workflow
                 https://github.com/yt-dlp/yt-dlp/blob/HEAD/.github/workflows/release.yml
-  commit:       65cf46cddd873fd229dbb0fc0689bca4c201c6b6
-                https://github.com/yt-dlp/yt-dlp/commit/65cf46cddd873fd229dbb0fc0689bca4c201c6b6
-  tag:          2024.12.23
-                https://github.com/yt-dlp/yt-dlp/releases/tag/2024.12.23
+  commit:       7fd74d10097833ebce0cb162e0ccf7825de9b768
+                https://github.com/yt-dlp/yt-dlp/commit/7fd74d10097833ebce0cb162e0ccf7825de9b768
+  tag:          2026.03.17
+                https://github.com/yt-dlp/yt-dlp/releases/tag/2026.03.17
