@@ -268,8 +268,6 @@
           `
             original_urlopen = pyodide_http._urllib.urlopen
 
-            enum_forbidden_header_names = ["accept-charset", "accept-encoding", "access-control-request-headers", "access-control-request-method", "access-control-request-private-network", "connection", "content-length", "cookie", "date", "dnt", "expect", "host", "keep-alive", "origin", "referer", "set-cookie", "te", "trailer", "transfer-encoding", "upgrade", "user-agent", "via", "x-http-method", "x-http-method-override", "x-method-override"]
-
             def prevent_mixed_content(req_url):
                 window_url_scheme = '${window.location.protocol.toLowerCase()}'
                 if window_url_scheme == 'https:':
@@ -278,13 +276,7 @@
                         req_url = window_url_scheme + req_url[5:]
                 return req_url
 
-            def encode_forbidden_header_name(name):
-                try:
-                    return enum_forbidden_header_names.index(name.lower())
-                except ValueError:
-                    return -1
-
-            def encode_forbidden_header_value(val):
+            def encode_base64_value(val):
                 encoded = base64.b64encode(val.encode()).decode()
                 encoded = encoded.rstrip('=').replace('+', '-').replace('/', '*')
                 return encoded
@@ -293,22 +285,23 @@
                 if isinstance(url, pyodide_http._urllib.urllib.request.Request):
                     url.full_url = prevent_mixed_content(url.full_url)
 
-                    enum_forbidden_header_names = ["accept-charset", "accept-encoding", "access-control-request-headers", "access-control-request-method", "access-control-request-private-network", "connection", "content-length", "cookie", "date", "dnt", "expect", "host", "keep-alive", "origin", "referer", "set-cookie", "te", "trailer", "transfer-encoding", "upgrade", "user-agent", "via", "x-http-method", "x-http-method-override", "x-method-override"]
-                    cors_safelisted_header_name = 'content-language'
-                    list_forbidden_header_values = []
+                    cors_safelisted_header_names = ["accept", "accept-language", "content-language", "content-type", "range"]
+                    cors_safelisted_header_name  = 'content-language'
+                    encoded_headers = []
                     for header_name, header_value in url.header_items():
                         header_name = header_name.lower()
                         if header_name == cors_safelisted_header_name:
-                            list_forbidden_header_values.append(header_value)
+                            encoded_headers.append(header_value)
                             continue
-                        encoded_header_name = encode_forbidden_header_name(header_name)
-                        if encoded_header_name >= 0:
-                            encoded_header_value = encode_forbidden_header_value(header_value)
-                            list_forbidden_header_values.append("SMH;" + str(encoded_header_name) + "=" + encoded_header_value)
+                        if header_name not in cors_safelisted_header_names:
+                            encoded_header_name  = encode_base64_value(header_name)
+                            encoded_header_value = encode_base64_value(header_value)
+                            encoded_headers.append("SMH;" + encoded_header_name + "=" + encoded_header_value)
+                            url.remove_header(header_name)
                             continue
 
-                    if (len(list_forbidden_header_values) > 0):
-                        header_value = ','.join(list_forbidden_header_values)
+                    if (len(encoded_headers) > 0):
+                        header_value = ','.join(encoded_headers)
                         url.add_header(cors_safelisted_header_name, header_value)
                 else:
                     url = prevent_mixed_content(url)
