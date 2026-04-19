@@ -255,6 +255,8 @@
             import pyodide_http
             import yt_dlp
             import json
+            import base64
+            import re
             ssl._create_default_https_context = ssl._create_unverified_context
             pyodide_http.patch_all()
             print("yt_dlp imported: " + yt_dlp.version.__version__)
@@ -267,6 +269,8 @@
           `
             original_urlopen = pyodide_http._urllib.urlopen
 
+            enum_forbidden_header_names = ["accept-charset", "accept-encoding", "access-control-request-headers", "access-control-request-method", "access-control-request-private-network", "connection", "content-length", "cookie", "date", "dnt", "expect", "host", "keep-alive", "origin", "referer", "set-cookie", "te", "trailer", "transfer-encoding", "upgrade", "user-agent", "via", "x-http-method", "x-http-method-override", "x-method-override"]
+
             def prevent_mixed_content(req_url):
                 window_url_scheme = '${window.location.protocol.toLowerCase()}'
                 if window_url_scheme == 'https:':
@@ -275,17 +279,28 @@
                         req_url = window_url_scheme + req_url[5:]
                 return req_url
 
+            def encode_forbidden_header_name(name):
+                try:
+                    return enum_forbidden_header_names.index(name.lower())
+                except ValueError:
+                    return -1
+
+            def encode_forbidden_header_value(val):
+                encoded = base64.b64encode(val.encode()).decode()
+                encoded = re.sub(r'=+$', '', encoded)
+                encoded = encoded.replace('+', '-').replace('/', '*')
+                return encoded
+
             def modified_urlopen(url, *args, **kwargs):
                 if isinstance(url, pyodide_http._urllib.urllib.request.Request):
                     url.full_url = prevent_mixed_content(url.full_url)
 
-                    # forbidden request headers:
-                    #   https://developer.mozilla.org/en-US/docs/Glossary/Forbidden_request_header
-                    forbidden_header_names = ["accept-charset", "accept-encoding", "access-control-request-headers", "access-control-request-method", "access-control-request-private-network", "connection", "content-length", "cookie", "date", "dnt", "expect", "host", "keep-alive", "origin", "referer", "set-cookie", "te", "trailer", "transfer-encoding", "upgrade", "user-agent", "via", "x-http-method", "x-http-method-override", "x-method-override"]
+                    enum_forbidden_header_names = ["accept-charset", "accept-encoding", "access-control-request-headers", "access-control-request-method", "access-control-request-private-network", "connection", "content-length", "cookie", "date", "dnt", "expect", "host", "keep-alive", "origin", "referer", "set-cookie", "te", "trailer", "transfer-encoding", "upgrade", "user-agent", "via", "x-http-method", "x-http-method-override", "x-method-override"]
                     for header_name, header_value in url.header_items():
-                      header_name = header_name.lower()
-                      if header_name.startswith("proxy-") or header_name.startswith("sec-") or header_name in forbidden_header_names:
-                        url.add_header("x-simple-modify-headers-" + header_name, header_value)
+                      encoded_header_name = encode_forbidden_header_name(header_name)
+                      if encoded_header_name >= 0:
+                        encoded_header_value = encode_forbidden_header_value(header_value)
+                        url.add_header("content-language", "SMH;" + str(encoded_header_name) + "=" + encoded_header_value)
                 else:
                     url = prevent_mixed_content(url)
                 response = original_urlopen(url, *args, **kwargs)
