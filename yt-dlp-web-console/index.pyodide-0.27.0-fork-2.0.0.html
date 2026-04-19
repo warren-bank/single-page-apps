@@ -256,7 +256,6 @@
             import yt_dlp
             import json
             import base64
-            import re
             ssl._create_default_https_context = ssl._create_unverified_context
             pyodide_http.patch_all()
             print("yt_dlp imported: " + yt_dlp.version.__version__)
@@ -287,8 +286,7 @@
 
             def encode_forbidden_header_value(val):
                 encoded = base64.b64encode(val.encode()).decode()
-                encoded = re.sub(r'=+$', '', encoded)
-                encoded = encoded.replace('+', '-').replace('/', '*')
+                encoded = encoded.rstrip('=').replace('+', '-').replace('/', '*')
                 return encoded
 
             def modified_urlopen(url, *args, **kwargs):
