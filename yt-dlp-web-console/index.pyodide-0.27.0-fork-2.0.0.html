@@ -294,11 +294,22 @@
                     url.full_url = prevent_mixed_content(url.full_url)
 
                     enum_forbidden_header_names = ["accept-charset", "accept-encoding", "access-control-request-headers", "access-control-request-method", "access-control-request-private-network", "connection", "content-length", "cookie", "date", "dnt", "expect", "host", "keep-alive", "origin", "referer", "set-cookie", "te", "trailer", "transfer-encoding", "upgrade", "user-agent", "via", "x-http-method", "x-http-method-override", "x-method-override"]
+                    cors_safelisted_header_name = 'content-language'
+                    list_forbidden_header_values = []
                     for header_name, header_value in url.header_items():
-                      encoded_header_name = encode_forbidden_header_name(header_name)
-                      if encoded_header_name >= 0:
-                        encoded_header_value = encode_forbidden_header_value(header_value)
-                        url.add_header("content-language", "SMH;" + str(encoded_header_name) + "=" + encoded_header_value)
+                        header_name = header_name.lower()
+                        if header_name == cors_safelisted_header_name:
+                            list_forbidden_header_values.append(header_value)
+                            continue
+                        encoded_header_name = encode_forbidden_header_name(header_name)
+                        if encoded_header_name >= 0:
+                            encoded_header_value = encode_forbidden_header_value(header_value)
+                            list_forbidden_header_values.append("SMH;" + str(encoded_header_name) + "=" + encoded_header_value)
+                            continue
+
+                    if (len(list_forbidden_header_values) > 0):
+                        header_value = ','.join(list_forbidden_header_values)
+                        url.add_header(cors_safelisted_header_name, header_value)
                 else:
                     url = prevent_mixed_content(url)
                 response = original_urlopen(url, *args, **kwargs)
