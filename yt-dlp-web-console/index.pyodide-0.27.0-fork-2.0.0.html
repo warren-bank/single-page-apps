@@ -276,33 +276,86 @@
                         req_url = window_url_scheme + req_url[5:]
                 return req_url
 
+            enum_forbidden_header_names = ["accept-charset", "accept-encoding", "access-control-request-headers", "access-control-request-method", "access-control-request-private-network", "connection", "content-length", "cookie", "date", "dnt", "expect", "host", "keep-alive", "origin", "referer", "set-cookie", "te", "trailer", "transfer-encoding", "upgrade", "user-agent", "via", "x-http-method", "x-http-method-override", "x-method-override"]
+
+            def encode_forbidden_header_name(name):
+                try:
+                    return enum_forbidden_header_names.index(name.lower())
+                except ValueError:
+                    return -1
+
             def encode_base64_value(val):
                 encoded = base64.b64encode(val.encode()).decode()
                 encoded = encoded.rstrip('=').replace('+', '-').replace('/', '*')
                 return encoded
+
+            def embed_encoded_headers_into_cors_safelisted_headers(url, encoded_headers):
+                cors_safelisted_header_names = ["accept", "accept-language", "content-language", "content-type"]
+                encoded_header = None
+                cors_safelisted_header_name = None
+                cors_safelisted_header_value = None
+                encoded_headers.sort(key=len)
+                while (len(encoded_headers) > 0) and (len(cors_safelisted_header_names) > 0):
+                    if encoded_header is None:
+                        encoded_header = encoded_headers.pop(0)
+                    if cors_safelisted_header_name is None:
+                        cors_safelisted_header_name = cors_safelisted_header_names.pop(0)
+                    if cors_safelisted_header_name == "accept" or cors_safelisted_header_name == "accept-language" or cors_safelisted_header_name == "content-language":
+                        if cors_safelisted_header_value is None:
+                            cors_safelisted_header_value = url.get_header(cors_safelisted_header_name, '')
+                        if len(cors_safelisted_header_value) + len(",SMH;" + encoded_header) > 128:
+                            # cannot embed any additional encoded headers.
+                            # finalize, and move to the next safelisted header
+                            url.add_header(cors_safelisted_header_name, cors_safelisted_header_value)
+                            cors_safelisted_header_name = None
+                            cors_safelisted_header_value = None
+                        else:
+                            # embed
+                            if len(cors_safelisted_header_value) > 0:
+                                cors_safelisted_header_value += ','
+                            cors_safelisted_header_value += "SMH;" + encoded_header
+                            encoded_header = None
+                    elif cors_safelisted_header_name == "content-type":
+                        if url.has_header(cors_safelisted_header_name):
+                            # abort, and move to the next safelisted header
+                            cors_safelisted_header_name = None
+                        else:
+                            if cors_safelisted_header_value is None:
+                                # boundary only;
+                                # the rest of the header value will be prepended when finalized
+                                cors_safelisted_header_value = 'SMH'
+                            if len(cors_safelisted_header_value) + len(";" + encoded_header) > 70:
+                                # cannot embed any additional encoded headers.
+                                # finalize, and move to the next safelisted header
+                                if cors_safelisted_header_value != 'SMH':
+                                    cors_safelisted_header_value = "multipart/form-data; boundary=" + cors_safelisted_header_value
+                                    url.add_header(cors_safelisted_header_name, cors_safelisted_header_value)
+                                cors_safelisted_header_name = None
+                                cors_safelisted_header_value = None
+                            else:
+                                # embed
+                                cors_safelisted_header_value += ";" + encoded_header
+                                encoded_header = None
 
             def modified_urlopen(url, *args, **kwargs):
                 if isinstance(url, pyodide_http._urllib.urllib.request.Request):
                     url.full_url = prevent_mixed_content(url.full_url)
 
                     cors_safelisted_header_names = ["accept", "accept-language", "content-language", "content-type", "range"]
-                    cors_safelisted_header_name  = 'content-language'
                     encoded_headers = []
                     for header_name, header_value in url.header_items():
                         header_name = header_name.lower()
-                        if header_name == cors_safelisted_header_name:
-                            encoded_headers.append(header_value)
-                            continue
                         if header_name not in cors_safelisted_header_names:
-                            encoded_header_name  = encode_base64_value(header_name)
+                            encoded_header_name = encode_forbidden_header_name(header_name)
+                            if encoded_header_name >= 0:
+                                encoded_header_name = str(encoded_header_name)
+                            else:
+                                encoded_header_name = encode_base64_value(header_name)
                             encoded_header_value = encode_base64_value(header_value)
-                            encoded_headers.append("SMH;" + encoded_header_name + "=" + encoded_header_value)
+                            encoded_headers.append(encoded_header_name + "=" + encoded_header_value)
                             url.remove_header(header_name)
-                            continue
+                    embed_encoded_headers_into_cors_safelisted_headers(url, encoded_headers)
 
-                    if (len(encoded_headers) > 0):
-                        header_value = ','.join(encoded_headers)
-                        url.add_header(cors_safelisted_header_name, header_value)
                 else:
                     url = prevent_mixed_content(url)
                 response = original_urlopen(url, *args, **kwargs)
