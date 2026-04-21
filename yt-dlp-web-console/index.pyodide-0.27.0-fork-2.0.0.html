@@ -276,6 +276,19 @@
                         req_url = window_url_scheme + req_url[5:]
                 return req_url
 
+            cors_safelisted_header_names = ["accept", "accept-language", "content-language", "content-type", "range"]
+            cors_safelisted_content_type_header_values = ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"]
+
+            def is_header_cors_safelisted(header_name, header_value):
+                header_name = header_name.lower()
+                if header_name in cors_safelisted_header_names:
+                    if header_name == "content-type":
+                        header_value = header_value.split(';')[0].strip().lower()
+                        return header_value in cors_safelisted_content_type_header_values
+                    else:
+                        return True
+                return False
+
             enum_forbidden_header_names = ["accept-charset", "accept-encoding", "access-control-request-headers", "access-control-request-method", "access-control-request-private-network", "connection", "content-length", "cookie", "date", "dnt", "expect", "host", "keep-alive", "origin", "referer", "set-cookie", "te", "trailer", "transfer-encoding", "upgrade", "user-agent", "via", "x-http-method", "x-http-method-override", "x-method-override"]
 
             def encode_forbidden_header_name(name):
@@ -341,16 +354,14 @@
                 if isinstance(url, pyodide_http._urllib.urllib.request.Request):
                     url.full_url = prevent_mixed_content(url.full_url)
 
-                    cors_safelisted_header_names = ["accept", "accept-language", "content-language", "content-type", "range"]
                     encoded_headers = []
                     for header_name, header_value in url.header_items():
-                        lc_header_name = header_name.lower()
-                        if lc_header_name not in cors_safelisted_header_names:
-                            encoded_header_name = encode_forbidden_header_name(lc_header_name)
+                        if not is_header_cors_safelisted(header_name, header_value):
+                            encoded_header_name = encode_forbidden_header_name(header_name)
                             if encoded_header_name >= 0:
                                 encoded_header_name = str(encoded_header_name)
                             else:
-                                encoded_header_name = encode_base64_value(lc_header_name)
+                                encoded_header_name = encode_base64_value(header_name)
                             encoded_header_value = encode_base64_value(header_value)
                             encoded_headers.append(encoded_header_name + "=" + encoded_header_value)
                             url.remove_header(header_name)
