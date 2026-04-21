@@ -344,13 +344,13 @@
                     cors_safelisted_header_names = ["accept", "accept-language", "content-language", "content-type", "range"]
                     encoded_headers = []
                     for header_name, header_value in url.header_items():
-                        header_name = header_name.lower()
-                        if header_name not in cors_safelisted_header_names:
-                            encoded_header_name = encode_forbidden_header_name(header_name)
+                        lc_header_name = header_name.lower()
+                        if lc_header_name not in cors_safelisted_header_names:
+                            encoded_header_name = encode_forbidden_header_name(lc_header_name)
                             if encoded_header_name >= 0:
                                 encoded_header_name = str(encoded_header_name)
                             else:
-                                encoded_header_name = encode_base64_value(header_name)
+                                encoded_header_name = encode_base64_value(lc_header_name)
                             encoded_header_value = encode_base64_value(header_value)
                             encoded_headers.append(encoded_header_name + "=" + encoded_header_value)
                             url.remove_header(header_name)
