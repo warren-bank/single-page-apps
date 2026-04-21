@@ -255,6 +255,7 @@
             import pyodide_http
             import yt_dlp
             import json
+            import js
             import base64
             ssl._create_default_https_context = ssl._create_unverified_context
             pyodide_http.patch_all()
@@ -269,7 +270,7 @@
             original_urlopen = pyodide_http._urllib.urlopen
 
             def prevent_mixed_content(req_url):
-                window_url_scheme = '${window.location.protocol.toLowerCase()}'
+                window_url_scheme = js.window.location.protocol.lower()
                 if window_url_scheme == 'https:':
                     req_url_scheme = req_url[:5].lower()
                     if req_url_scheme == 'http:':
