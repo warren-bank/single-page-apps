@@ -55,6 +55,47 @@
 
       <hr />
 
+      <article>
+        <h1><span class="python-prompt large"></span> Requirements</h1>
+        <ul>
+          <li>
+            The <a target="_blank" href="https://github.com/warren-bank/crx-simple-modify-headers"><b>Simple Modify Headers - Extended</b></a> WebExtension serves 2 important needs:
+            <ol>
+              <li>
+                All <b><i>yt-dlp</i></b> network requests that include HTTP headers which are not <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Glossary/CORS-safelisted_request_header">CORS safelisted</a><br>are silently modified in <i>Pyodide</i>&hellip; such that these headers are encoded,<br>and embedded into <i>"safe"</i> request headers.<br>This solves 2 problems:
+                <ol>
+                  <li>the presence of any <i>"unsafe"</i> request headers triggers a <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request">CORS preflight request</a></li>
+                  <li>all <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Glossary/Forbidden_request_header">forbidden request headers</a> are blocked by browser security policy</li>
+                </ol>
+                The WebExtension recognizes this encoding convention,<br>and rehydrates the original <i>"unsafe"</i> and possibly <i>"forbidden"</i> HTTP request headers.
+              </li>
+              <li>
+                By enabling the <b><i>"allow CORS"</i></b> rule set,<br>HTTP response headers are added to all network traffic&hellip;<br>which allows cross-origin requests to succeed.
+              </li>
+            </ol>
+          </li>
+          <li>
+            The <b><i>"mount_native_directory(virtual_dirpath)"</i></b> API method requires Chrome 86+,<br>because it uses an <a target="_blank" href="https://pyodide.org/en/0.27.0/usage/file-system.html#experimental-using-the-native-file-system-in-the-browser">experimental Pyodide native file system</a>&hellip;<br>that depends on a <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API">File System Access API</a> currently only available in Chrome&hellip; added in v86.
+          </li>
+          <li>
+            The <b><i>"download_video(video_url, ydl_opts)"</i></b> API method also requires Chrome 86+,<br>because it uses the <b><i>"mount_native_directory(virtual_dirpath)"</i></b> API method.
+          </li>
+        </ul>
+
+        <h1><span class="python-prompt large"></span> Cookies</h1>
+        <p>The extractor for a supported site will sometimes require imported cookie values.<br>When this occurs:</p>
+        <ul>
+          <li>
+            The <a target="_blank" href="https://github.com/warren-bank/crx-simple-modify-headers"><b>Simple Modify Headers - Extended</b></a> WebExtension can be easily configured&hellip;<br>to add values to the <i>"Cookie"</i> header send in requests to a particular site.
+          </li>
+          <li>
+            The <b><i>"download_video(video_url, ydl_opts)"</i></b> API method is preconfigured<br>with a default option that reads cookies from a Netscape format <b><i>"cookies.txt"</i></b> file&hellip;<br>located in the selected output directory.
+          </li>
+        </ul>
+      </article>
+
+      <hr />
+
       <!-- note the indentation on the code blocks within <pre> is deliberate & important for correct layout ! -->
       <div class="console-examples">
         <h1><span class="python-prompt large"></span> Discover the yt-dlp online web console</h1>
@@ -68,63 +109,113 @@
           <button onClick="parseScript('a')">RUN &gt;</button>
         </div>
 
-        <h2><a target="_blank" href="https://github.com/yt-dlp/yt-dlp#extracting-information">Extracting information</a></h2>
+        <h2>[Chrome 86+] Download a video, and save files into a native directory</h2>
         <div id="pythonScript" class="b">
           <pre>
-<code>URL = 'https://www.youtube.com/watch?v=qhKci8jY510'</code>
-
-<code>ydl_opts = {}</code>
-
-<code>with yt_dlp.YoutubeDL(ydl_opts) as ydl:</code>
-<code>    info = ydl.extract_info(URL, download=False)</code>
-<code>    print(json.dumps(ydl.sanitize_info(info)))</code>
+<code>clear</code>
+<code></code>
+<code># https://tubitv.com/series/2176/mr-bean-the-animated-series</code>
+<code>URL = 'https://tubitv.com/tv-shows/381933'</code>
+<code></code>
+<code>ydl_opts = {</code>
+<code>    'debug_printtraffic': False,</code>
+<code>}</code>
+<code></code>
+<code>await download_video(URL, ydl_opts)</code>
 </pre>
           <button onClick="parseScript('b')">RUN &gt;</button>
         </div>
 
-        <h2><a target="_blank" href="https://github.com/yt-dlp/yt-dlp#filter-videos">Filter videos</a></h2>
+        <h2><a target="_blank" href="https://github.com/yt-dlp/yt-dlp#extracting-information">Extracting information</a></h2>
         <div id="pythonScript" class="c">
           <pre>
-<code>URL = 'https://www.youtube.com/watch?v=qhKci8jY510'</code>
-
-<code>def longer_than_a_minute(info, *, incomplete):</code>
-<code>    """Download only videos longer than a minute (or with unknown duration)"""</code>
-<code>    duration = info.get('duration')</code>
-<code>    if duration and duration < 60:</code>
-<code>        return 'The video is too short'</code>
-
-<code>ydl_opts = {</code>
-<code>    'match_filter': longer_than_a_minute,</code>
-<code>}</code>
-
+<code>clear</code>
+<code></code>
+<code>URL = 'https://www.cbsnews.com/live/'</code>
+<code></code>
+<code>ydl_opts = {}</code>
+<code></code>
 <code>with yt_dlp.YoutubeDL(ydl_opts) as ydl:</code>
 <code>    info = ydl.extract_info(URL, download=False)</code>
-<code>    print(json.dumps(ydl.sanitize_info(info)))</code>
+<code>    print("Video info = " + json.dumps(ydl.sanitize_info(info), indent=4))</code>
 </pre>
           <button onClick="parseScript('c')">RUN &gt;</button>
         </div>
 
-        <h2><a target="_blank" href="https://github.com/yt-dlp/yt-dlp#use-a-custom-format-selector">Use a custom format selector</a></h2>
+        <h2><a target="_blank" href="https://github.com/yt-dlp/yt-dlp#filter-videos">Filter videos</a></h2>
+        <!--
+          https://github.com/yt-dlp/yt-dlp/blob/2026.03.17/yt_dlp/YoutubeDL.py#L453-L463
+        -->
         <div id="pythonScript" class="d">
           <pre>
-<code>URL = 'https://www.youtube.com/watch?v=qhKci8jY510'</code>
+<code>clear</code>
+<code></code>
+<code># https://tubitv.com/series/2176/mr-bean-the-animated-series</code>
+<code># duration of episode: 711 seconds</code>
+<code>URL = 'https://tubitv.com/tv-shows/381933'</code>
+<code></code>
+<code># minimum duration (in seconds) to pass through filter</code>
+<code>min_duration = 712</code>
+<code></code>
+<code>def longer_than_min_duration(info, *, incomplete):</code>
+<code>    # Download videos longer than a minumum duration.</code>
+<code>    # Remove videos with unknown duration.
+<code>    # Remove live streams.
+<code>    duration = info.get('duration')</code>
+<code>    print("Video duration = " + str(duration) + " seconds")</code>
+<code>    if not duration or info.get('is_live') or duration < min_duration:</code>
+<code>        return "Video does not pass filter."</code>
+<code></code>
+<code>ydl_opts = {</code>
+<code>    'match_filter': longer_than_min_duration,</code>
+<code>}</code>
+<code></code>
+<code>with yt_dlp.YoutubeDL(ydl_opts) as ydl:</code>
+<code>    info = ydl.extract_info(URL, download=False)</code>
+<code>    print("Video info = " + json.dumps(ydl.sanitize_info(info), indent=4))</code>
+</pre>
+          <button onClick="parseScript('d')">RUN &gt;</button>
+        </div>
 
+        <h2><a target="_blank" href="https://github.com/yt-dlp/yt-dlp#use-a-custom-format-selector">Use a custom format selector</a></h2>
+        <div id="pythonScript" class="e">
+          <pre>
+<code>clear</code>
+<code></code>
+<code># https://tubitv.com/series/2176/mr-bean-the-animated-series</code>
+<code>URL = 'https://tubitv.com/tv-shows/381933'</code>
+<code></code>
 <code>def format_selector(ctx):</code>
-<code>    """ Select the best video and the best audio that won't result in an mkv.</code>
-<code>    NOTE: This is just an example and does not handle all cases """</code>
+<code>    # Select the best video and the best audio that won't result in an mkv.</code>
+<code>    # NOTE: This is just an example and does not handle all cases</code>
 
 <code>    # formats are already sorted worst to best</code>
 <code>    formats = ctx.get('formats')[::-1]</code>
 
-<code>    # acodec='none' means there is no audio</code>
-<code>    best_video = next(f for f in formats</code>
-<code>                      if f['vcodec'] != 'none' and f['acodec'] == 'none')</code>
+<code>    # best video-only format</code>
+<code>    best_video = next(f for f in formats if (</code>
+<code>        (</code>
+<code>            ('vcodec'    in f and f['vcodec']    != 'none') or</code>
+<code>            ('video_ext' in f and f['video_ext'] != 'none')</code>
+<code>        )</code>
+<code>        and ('acodec'    not in f or f['acodec']    == 'none')</code>
+<code>        and ('audio_ext' not in f or f['audio_ext'] == 'none')</code>
+<code>    ))</code>
+<code>    print("Best video format = " + json.dumps(best_video, indent=4))</code>
 
 <code>    # find compatible audio extension</code>
-<code>    audio_ext = {'mp4': 'm4a', 'webm': 'webm'}[best_video['ext']]</code>
-<code>    # vcodec='none' means there is no video</code>
+<code>    audio_exts = {'mp4': ['mp4','m4a'], 'webm': ['webm']}[best_video['ext']]</code>
+<code>    # best audio-only format w/ same file extension as the best video-only format</code>
 <code>    best_audio = next(f for f in formats if (</code>
-<code>        f['acodec'] != 'none' and f['vcodec'] == 'none' and f['ext'] == audio_ext))</code>
+<code>        (</code>
+<code>            ('acodec'    in f and f['acodec']    != 'none') or</code>
+<code>            ('audio_ext' in f and f['audio_ext'] != 'none')</code>
+<code>        )</code>
+<code>        and ('vcodec'    not in f or f['vcodec']    == 'none')</code>
+<code>        and ('video_ext' not in f or f['video_ext'] == 'none')</code>
+<code>        and ('ext' in f and f['ext'] in audio_exts)</code>
+<code>    ))</code>
+<code>    print("Best audio format = " + json.dumps(best_audio, indent=4))</code>
 
 <code>    # These are the minimum required fields for a merged format</code>
 <code>    yield {</code>
@@ -134,16 +225,16 @@
 <code>        # Must be + separated list of protocols</code>
 <code>        'protocol': f'{best_video["protocol"]}+{best_audio["protocol"]}'</code>
 <code>    }</code>
-
+<code></code>
 <code>ydl_opts = {</code>
 <code>    'format': format_selector,</code>
 <code>}</code>
-
+<code></code>
 <code>with yt_dlp.YoutubeDL(ydl_opts) as ydl:</code>
 <code>    info = ydl.extract_info(URL, download=False)</code>
-<code>    print(json.dumps(ydl.sanitize_info(info)))</code>
+<code>    print("Video info = " + json.dumps(ydl.sanitize_info(info), indent=4))</code>
 </pre>
-          <button onClick="parseScript('d')">RUN &gt;</button>
+          <button onClick="parseScript('e')">RUN &gt;</button>
         </div>
 
       </div><!-- end div.console -->
@@ -378,6 +469,57 @@
                 return response
 
             pyodide_http._urllib.urlopen = modified_urlopen
+          `
+        );
+
+        // [Chrome 86+] public facing API helper methods
+        pyodide.runPython(
+          `
+            import pyodide
+
+            async def download_video(video_url, ydl_opts={}):
+                virtual_dirpath = "/yt-dlp"
+                nativefs = await mount_native_directory(virtual_dirpath)
+                if nativefs is None:
+                    print("Did not mount native directory")
+                else:
+                    default_ydl_opts = {
+                        'ffmpeg_location': '',
+                        'cookiefile': virtual_dirpath + '/cookies.txt',
+                        'paths': {'home': virtual_dirpath, 'temp': virtual_dirpath},
+                        'outtmpl': {'default': '%(title)s.%(ext)s'},
+                        'windowsfilenames': True,
+                        'prefer_insecure': False,
+                        'nocheckcertificate': True,
+                        'debug_printtraffic': True,
+                        'live_from_start': True,
+                        'allow_unplayable_formats': True,
+                        'keepvideo': True,
+                        'writesubtitles': True,
+                        'subtitleslangs': ['all']
+                    }
+                    merged_ydl_opts = default_ydl_opts | ydl_opts
+                    with yt_dlp.YoutubeDL(merged_ydl_opts) as ydl:
+                        ydl.download([video_url])
+                        await nativefs.syncfs()
+
+            async def mount_native_directory(virtual_dirpath):
+                try:
+                    js.pyodide.FS.unmount(virtual_dirpath)
+                except:
+                    pass
+                try:
+                    dirHandle = await js.window.showDirectoryPicker()
+                    permissionStatus = await dirHandle.requestPermission(
+                        pyodide.ffi.to_js({'mode': 'readwrite'}, dict_converter=js.Object.fromEntries)
+                    )
+                    if permissionStatus != 'granted':
+                        raise Exception("Permission denied")
+                    nativefs = await js.pyodide.mountNativeFS(virtual_dirpath, dirHandle)
+                    return nativefs
+                except Exception as e:
+                    print(f"Error: {e}")
+                    return None
           `
         );
 
