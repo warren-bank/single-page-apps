@@ -43,6 +43,27 @@
         height: 600px;
         z-index: 2000;
       }
+
+      #api-methods {
+        line-height: 1.4em;
+      }
+      #api-methods > li + li {
+        padding-top: 0.4em;
+      }
+      #api-methods code {
+        font-family: "Ubuntu Mono", Monaco, monospace;
+        background: #F5F7FA;
+        padding: 0 0.4em;
+        border-radius: 3px;
+      }
+      #api-methods pre {
+        background: #F5F7FA;
+        margin: 0;
+        padding: 1em;
+        border-radius: 3px;
+        overflow-x: auto;
+      }
+      #api-methods pre code { background: none; padding: 0; }
     </style>
   </head>
   <body>
@@ -56,8 +77,192 @@
       <hr />
 
       <article>
-        <h1><span class="python-prompt large"></span> Requirements</h1>
-        <ul>
+        <h2><span class="python-prompt"></span> API methods</h2>
+        <ul id="api-methods">
+          <li>
+            <code>def use_cors_webextension():</code>
+            <ul>
+              <li>
+                purpose:
+                <ul>
+                  <li>use the <a target="_blank" href="https://github.com/warren-bank/crx-simple-modify-headers/tree/extended"><code>Simple Modify Headers - Extended</code> WebExtension</a></li>
+                </ul>
+              </li>
+              <li>
+                considerations:
+                <ul>
+                  <li>this is the default behavior</li>
+                  <li>calling this method is a way to revert this configuration, if it had previously been changed by a call to: <code>use_cors_proxy</code></li>
+                  <li>it requires a browser that supports <a target="_blank" href="https://developer.chrome.com/docs/extensions/mv2">Manifest v2 (<em>mv2</em>)</a> WebExtensions, which was <a target="_blank" href="https://developer.chrome.com/docs/extensions/develop/migrate/mv2-deprecation-timeline">removed from Chrome</a> in version 139</li>
+                  <li>some Chromium forks have chosen to not remove support for <em>mv2</em> WebExtensions; my personal favorite is <a target="_blank" href="https://github.com/win32ss/supermium"><em>Supermium</em></a></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <code>def use_cors_proxy(api_url=None, api_key=None):</code>
+            <ul>
+              <li>
+                input:
+                <ul>
+                  <li>[<em>optional</em>] <code>api_url</code> is a <a target="_blank" href="https://corsproxy.io/">corsproxy.io</a> compatible API endpoint</li>
+                  <li>[<em>optional</em>] <code>api_key</code></li>
+                </ul>
+              </li>
+              <li>
+                examples:
+                <ol>
+                  <li>
+                    use the default <em>corsproxy</em> server:
+                    <pre><code> use_cors_proxy()</code></pre>
+                    <ul>
+                      <li>which is an instance of the Cloudflare Worker: <a target="_blank" href="https://github.com/warren-bank/cloudflare-workers/tree/corsproxy"><code>corsproxy</code></a></li>
+                      <li>deployed to: <a target="_blank" href="https://cors-yt-dlp-web-console.warren-bank.workers.dev/">this API URL</a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li>
+                    use the free-tier of the official service provider:
+                    <pre><code> use_cors_proxy('https://corsproxy.io/')</code></pre>
+                    <ul>
+                      <li>which is not recommended, and is abusive of their generosity</li>
+                    </ul>
+                  </li>
+                  <li>
+                    use the paid-tier of the official service provider:
+                    <pre><code> use_cors_proxy('https://corsproxy.io/', 'my-api-key')</code></pre>
+                    <ul>
+                      <li>which requires you to have your own subscription, and personal API key</li>
+                    </ul>
+                  </li>
+                </ol>
+              </li>
+              <li>
+                purpose:
+                <ul>
+                  <li>use a CORS proxy with per-request header overrides as an alternative to using the <a target="_blank" href="https://github.com/warren-bank/crx-simple-modify-headers/tree/extended"><code>Simple Modify Headers - Extended</code> WebExtension</a></li>
+                </ul>
+              </li>
+              <li>
+                considerations:
+                <ul>
+                  <li>when downloading videos, a lot of data will pass through the CORS proxy</li>
+                  <li>using a <em>mv2</em> WebExtension is a much more efficient way to modify request and response HTTP headers</li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <code>async def mount_native_directory(virtual_dirpath):</code>
+            <ul>
+              <li>
+                requirements:
+                <ul>
+                  <li>Chrome 86+<br>(does not work in Firefox)</li>
+                </ul>
+              </li>
+              <li>
+                input:
+                <ul>
+                  <li>[<em>required</em>] <code>virtual_dirpath</code> is a virtual directory path<br><em>ex</em>: <code>&quot;/yt-dlp&quot;</code></li>
+                </ul>
+              </li>
+              <li>
+                purpose:
+                <ul>
+                  <li>opens a dialog to choose a native directory</li>
+                  <li>mounts the chosen native directory in Pyodide at the input virtual directory path</li>
+                </ul>
+              </li>
+              <li>
+                references:
+                <ul>
+                  <li>Pyodide: <a target="_blank" href="https://pyodide.org/en/0.27.0/usage/file-system.html#experimental-using-the-native-file-system-in-the-browser">experimental native file system</a></li>
+                  <li>Javascript: <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker"><code>showDirectoryPicker</code></a></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <code>async def download_video(video_url, ydl_opts):</code>
+            <ul>
+              <li>
+                requirements:
+                <ul>
+                  <li>Chrome 86+<br>(does not work in Firefox)</li>
+                </ul>
+              </li>
+              <li>
+                input:
+                <ul>
+                  <li>[<em>required</em>] <code>video_url</code> is the URL for a video to download</li>
+                  <li>
+                    [<em>optional</em>] <code>ydl_opts</code> is a dictionary of <a target="_blank" href="https://github.com/yt-dlp/yt-dlp/blob/2026.03.17/yt_dlp/YoutubeDL.py#L217-L591">options</a>
+                    <ul>
+                      <li>this user supplied set of options are merged with and override a default set of options that are hard-coded within the method</li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                purpose:
+                <ul>
+                  <li>opens a dialog to choose a native directory</li>
+                  <li>downloads the video, and saves files into the native directory</li>
+                </ul>
+              </li>
+              <li>
+                examples:
+                <ol>
+                  <li>
+                    download video url that saves separate audio and video files:
+                    <pre><code> <span># https://tubitv.com/series/2176/mr-bean-the-animated-series</span>
+ <span>await</span> download_video(<span>&quot;https://tubitv.com/tv-shows/381933&quot;</span>)
+
+ <span># result: success!</span>
+
+ <span># saved files:</span>
+ <span>#   [85.2 MB, video only] S01E01 - In the Wild.fhlsv6-1134.mp4</span>
+ <span>#   [10.9 MB, audio only] S01E01 - In the Wild.fhlsv6-default-audio-group-English-1.mp4</span>
+</code></pre>
+                  </li>
+                  <li>
+                    bash script to combine these saved files:
+                    <pre><code> <span>#!/usr/bin/env bash</span>
+
+ video=<span>&#x27;S01E01 - In the Wild.fhlsv6-1134.mp4&#x27;</span>
+ audio=<span>&#x27;S01E01 - In the Wild.fhlsv6-default-audio-group-English-1.mp4&#x27;</span>
+ output=<span>&#x27;S01E01 - In the Wild.mp4&#x27;</span>
+ ffmpeg -i <span>&quot;<span>$video</span>&quot;</span> -i <span>&quot;<span>$audio</span>&quot;</span> -c copy -map 0:v -map 1:a <span>&quot;<span>$output</span>&quot;</span>
+</code></pre>
+                  </li>
+                  <li>
+                    download video url that saves files that don’t require any post-processing:
+                    <pre><code> <span># override a default option:</span>
+ ydl_opts = {<span>&#x27;debug_printtraffic&#x27;</span>: <span>False</span>}
+
+ <span># https://www.pbs.org/show/washington-week/</span>
+ <span>await</span> download_video(
+   <span>&quot;https://www.pbs.org/video/washington-week-with-the-atlantic-full-episode-41726-hrkufz/&quot;</span>,
+   ydl_opts
+ )
+
+ <span># result: success!</span>
+
+ <span># saved files:</span>
+ <span>#   [1.28 GB, video + audio] Washington Week with The Atlantic - full episode, 4-17-26.mp4</span>
+ <span>#   [46.5 KB, captions only] Washington Week with The Atlantic - full episode, 4-17-26.en.vtt</span>
+</code></pre>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </li>
+        </ul>
+
+        <h2><span class="python-prompt"></span> CORS</h2>
+        <p>Two different strategies are supported that both accomplish the same goal: to allow cross-origin resource sharing (CORS)</p>
+        <ol>
           <li>
             The <a target="_blank" href="https://github.com/warren-bank/crx-simple-modify-headers"><b>Simple Modify Headers - Extended</b></a> WebExtension serves 2 important needs:
             <ol>
@@ -75,14 +280,15 @@
             </ol>
           </li>
           <li>
-            The <b><i>"mount_native_directory(virtual_dirpath)"</i></b> API method requires Chrome 86+,<br>because it uses an <a target="_blank" href="https://pyodide.org/en/0.27.0/usage/file-system.html#experimental-using-the-native-file-system-in-the-browser">experimental Pyodide native file system</a>&hellip;<br>that depends on a <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API">File System Access API</a> currently only available in Chrome&hellip; added in v86.
+            A <em>corsproxy</em> server can be used to override both HTTP request and response headers as network traffic passes through.
+            <ul>
+              <li>The desired request headers are converted to querystring parameters.</li>
+              <li>This proxy always adds response headers to allow CORS.</li>
+            </ul>
           </li>
-          <li>
-            The <b><i>"download_video(video_url, ydl_opts)"</i></b> API method also requires Chrome 86+,<br>because it uses the <b><i>"mount_native_directory(virtual_dirpath)"</i></b> API method.
-          </li>
-        </ul>
+        </ol>
 
-        <h1><span class="python-prompt large"></span> Cookies</h1>
+        <h2><span class="python-prompt"></span> Cookies</h2>
         <p>The extractor for a supported site will sometimes require imported cookie values.<br>When this occurs:</p>
         <ul>
           <li>
@@ -358,6 +564,29 @@
         //   https://github.com/koenvo/pyodide-http/pull/43
         pyodide.runPython(
           `
+            from enum import Enum
+
+            class Cors(Enum):
+                MV2_WEB_EXTENSION = 1
+                PROXY = 2
+
+            configs = {
+                "cors": Cors.MV2_WEB_EXTENSION
+            }
+
+            def use_cors_proxy(api_url=None, api_key=None):
+                if not api_url:
+                    api_url = "https://cors-yt-dlp-web-console.warren-bank.workers.dev/"
+                    api_key = "warren-bank"
+                configs['cors'] = Cors.PROXY
+                configs['corsproxy_api_url'] = api_url
+                configs['corsproxy_api_key'] = api_key
+
+            def use_cors_webextension():
+                configs['cors'] = Cors.MV2_WEB_EXTENSION
+
+            # ------------------------------------------------------------------
+
             original_urlopen = pyodide_http._urllib.urlopen
 
             def prevent_mixed_content(req_url):
@@ -367,6 +596,42 @@
                     if req_url_scheme == 'http:':
                         req_url = window_url_scheme + req_url[5:]
                 return req_url
+
+            def modified_urlopen(url, *args, **kwargs):
+                if isinstance(url, pyodide_http._urllib.urllib.request.Request):
+                    url.full_url = prevent_mixed_content(url.full_url)
+
+                    if configs['cors'] == Cors.MV2_WEB_EXTENSION:
+                        update_url_with_cors_mv2_web_extension(url)
+                    elif configs['cors'] == Cors.PROXY:
+                        update_url_with_cors_proxy(url)
+                else:
+                    url = prevent_mixed_content(url)
+                response = original_urlopen(url, *args, **kwargs)
+                if isinstance(url, pyodide_http._urllib.urllib.request.Request):
+                    response.url = url.full_url
+                else:
+                    response.url = url
+                return response
+
+            pyodide_http._urllib.urlopen = modified_urlopen
+
+            # ------------------------------------------------------------------
+            # Cors.MV2_WEB_EXTENSION
+
+            def update_url_with_cors_mv2_web_extension(url):
+                encoded_headers = []
+                for header_name, header_value in url.header_items():
+                    if not is_header_cors_safelisted(header_name, header_value):
+                        encoded_header_name = encode_forbidden_header_name(header_name)
+                        if encoded_header_name >= 0:
+                            encoded_header_name = str(encoded_header_name)
+                        else:
+                            encoded_header_name = encode_base64_value(header_name)
+                        encoded_header_value = encode_base64_value(header_value)
+                        encoded_headers.append(encoded_header_name + "=" + encoded_header_value)
+                        url.remove_header(header_name)
+                embed_encoded_headers_into_cors_safelisted_headers(url, encoded_headers)
 
             cors_safelisted_header_names = ["accept", "accept-language", "content-language", "content-type", "range"]
             cors_safelisted_content_type_header_values = ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"]
@@ -442,33 +707,18 @@
                                 cors_safelisted_header_value += ";" + encoded_header
                                 encoded_header = None
 
-            def modified_urlopen(url, *args, **kwargs):
-                if isinstance(url, pyodide_http._urllib.urllib.request.Request):
-                    url.full_url = prevent_mixed_content(url.full_url)
+            # ------------------------------------------------------------------
+            # Cors.PROXY
 
-                    encoded_headers = []
-                    for header_name, header_value in url.header_items():
-                        if not is_header_cors_safelisted(header_name, header_value):
-                            encoded_header_name = encode_forbidden_header_name(header_name)
-                            if encoded_header_name >= 0:
-                                encoded_header_name = str(encoded_header_name)
-                            else:
-                                encoded_header_name = encode_base64_value(header_name)
-                            encoded_header_value = encode_base64_value(header_value)
-                            encoded_headers.append(encoded_header_name + "=" + encoded_header_value)
-                            url.remove_header(header_name)
-                    embed_encoded_headers_into_cors_safelisted_headers(url, encoded_headers)
-
-                else:
-                    url = prevent_mixed_content(url)
-                response = original_urlopen(url, *args, **kwargs)
-                if isinstance(url, pyodide_http._urllib.urllib.request.Request):
-                    response.url = url.full_url
-                else:
-                    response.url = url
-                return response
-
-            pyodide_http._urllib.urlopen = modified_urlopen
+            def update_url_with_cors_proxy(url):
+                qs_params = []
+                qs_params.append('url=' + js.window.encodeURIComponent(url.full_url))
+                if configs['corsproxy_api_key']:
+                    qs_params.append('key=' + js.window.encodeURIComponent(configs['corsproxy_api_key']))
+                for header_name, header_value in url.header_items():
+                    qs_params.append('reqHeaders=' + js.window.encodeURIComponent(header_name + ':' + (header_value or '')))
+                    url.remove_header(header_name)
+                url.full_url = configs['corsproxy_api_url'] + '?' + '&'.join(qs_params)
           `
         );
 
