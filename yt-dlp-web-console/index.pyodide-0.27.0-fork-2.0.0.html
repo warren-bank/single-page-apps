@@ -74,6 +74,10 @@
         <div class="loading"></div>
       </article>
 
+      <p>
+        Skip to: <a href="#console-examples">console examples</a>
+      </p>
+
       <hr />
 
       <article>
@@ -122,6 +126,20 @@
                     </ul>
                   </li>
                   <li>
+                    use a locally hosted <em>corsproxy</em> server:
+                    <pre><code> use_cors_proxy('http://localhost:8080/')</code></pre>
+                    <ul>
+                      <li>which is an instance of the Node.js server: <a target="_blank" href="https://github.com/warren-bank/node-CORS-Proxy"><code>corsproxy</code></a></li>
+                      <li>installed by:
+                          <pre><code> npm install --global "@warren-bank/corsproxy"</code></pre>
+                      </li>
+                      <li>started by:
+                          <pre><code> corsproxy --port "8080" --req-insecure</code></pre>
+                      </li>
+                      <li>and will also require some <a target="_blank" href="https://github.com/warren-bank/node-CORS-Proxy#web-browser-configuration">web browser configuration</a> to ensure that security policies don't get in the way</li>
+                    </ul>
+                  </li>
+                  <li>
                     use the free-tier of the official service provider:
                     <pre><code> use_cors_proxy('https://corsproxy.io/')</code></pre>
                     <ul>
@@ -148,6 +166,7 @@
                 <ul>
                   <li>when downloading videos, a lot of data will pass through the CORS proxy</li>
                   <li>using a <em>mv2</em> WebExtension is a much more efficient way to modify request and response HTTP headers</li>
+                  <li>using a locally hosted <em>corsproxy</em> server is the next-best option</li>
                 </ul>
               </li>
             </ul>
@@ -303,7 +322,7 @@
       <hr />
 
       <!-- note the indentation on the code blocks within <pre> is deliberate & important for correct layout ! -->
-      <div class="console-examples">
+      <div id="console-examples">
         <h1><span class="python-prompt large"></span> Discover the yt-dlp online web console</h1>
         <p>Please run the samples and/or type your own <strong>Python</strong> code to learn <strong>yt-dlp</strong>.</p>
 
@@ -315,8 +334,30 @@
           <button onClick="parseScript('a')">RUN &gt;</button>
         </div>
 
-        <h2>[Chrome 86+] Download a video, and save files into a native directory</h2>
+        <h2>Use a locally hosted <em>corsproxy</em> HTTP server:</h2>
         <div id="pythonScript" class="b">
+          <pre>
+# npm install --global "@warren-bank/corsproxy"
+# corsproxy --port "8080" --req-insecure
+
+<code>use_cors_proxy('http://localhost:8080/')</code>
+</pre>
+          <button onClick="parseScript('b')">RUN &gt;</button>
+        </div>
+
+        <h2>Use a locally hosted <em>corsproxy</em> HTTPS server:</h2>
+        <div id="pythonScript" class="c">
+          <pre>
+# npm install --global "@warren-bank/corsproxy"
+# corsproxy --tls --port "8081" --req-insecure
+
+<code>use_cors_proxy('https://localhost:8081/')</code>
+</pre>
+          <button onClick="parseScript('c')">RUN &gt;</button>
+        </div>
+
+        <h2>[Chrome 86+] Download a video, and save files into a native directory</h2>
+        <div id="pythonScript" class="d">
           <pre>
 <code>clear</code>
 <code></code>
@@ -329,11 +370,11 @@
 <code></code>
 <code>await download_video(URL, ydl_opts)</code>
 </pre>
-          <button onClick="parseScript('b')">RUN &gt;</button>
+          <button onClick="parseScript('d')">RUN &gt;</button>
         </div>
 
         <h2><a target="_blank" href="https://github.com/yt-dlp/yt-dlp#extracting-information">Extracting information</a></h2>
-        <div id="pythonScript" class="c">
+        <div id="pythonScript" class="e">
           <pre>
 <code>clear</code>
 <code></code>
@@ -345,14 +386,14 @@
 <code>    info = ydl.extract_info(URL, download=False)</code>
 <code>    print("Video info = " + json.dumps(ydl.sanitize_info(info), indent=4))</code>
 </pre>
-          <button onClick="parseScript('c')">RUN &gt;</button>
+          <button onClick="parseScript('e')">RUN &gt;</button>
         </div>
 
         <h2><a target="_blank" href="https://github.com/yt-dlp/yt-dlp#filter-videos">Filter videos</a></h2>
         <!--
           https://github.com/yt-dlp/yt-dlp/blob/2026.03.17/yt_dlp/YoutubeDL.py#L453-L463
         -->
-        <div id="pythonScript" class="d">
+        <div id="pythonScript" class="f">
           <pre>
 <code>clear</code>
 <code></code>
@@ -380,11 +421,11 @@
 <code>    info = ydl.extract_info(URL, download=False)</code>
 <code>    print("Video info = " + json.dumps(ydl.sanitize_info(info), indent=4))</code>
 </pre>
-          <button onClick="parseScript('d')">RUN &gt;</button>
+          <button onClick="parseScript('f')">RUN &gt;</button>
         </div>
 
         <h2><a target="_blank" href="https://github.com/yt-dlp/yt-dlp#use-a-custom-format-selector">Use a custom format selector</a></h2>
-        <div id="pythonScript" class="e">
+        <div id="pythonScript" class="g">
           <pre>
 <code>clear</code>
 <code></code>
@@ -440,7 +481,7 @@
 <code>    info = ydl.extract_info(URL, download=False)</code>
 <code>    print("Video info = " + json.dumps(ydl.sanitize_info(info), indent=4))</code>
 </pre>
-          <button onClick="parseScript('e')">RUN &gt;</button>
+          <button onClick="parseScript('g')">RUN &gt;</button>
         </div>
 
       </div><!-- end div.console -->
