@@ -639,20 +639,18 @@
                 return req_url
 
             def modified_urlopen(url, *args, **kwargs):
+                req_url = None
                 if isinstance(url, pyodide_http._urllib.urllib.request.Request):
-                    url.full_url = prevent_mixed_content(url.full_url)
+                    req_url = url.full_url = prevent_mixed_content(url.full_url)
 
                     if configs['cors'] == Cors.MV2_WEB_EXTENSION:
                         update_url_with_cors_mv2_web_extension(url)
                     elif configs['cors'] == Cors.PROXY:
                         update_url_with_cors_proxy(url)
                 else:
-                    url = prevent_mixed_content(url)
+                    req_url = url = prevent_mixed_content(url)
                 response = original_urlopen(url, *args, **kwargs)
-                if isinstance(url, pyodide_http._urllib.urllib.request.Request):
-                    response.url = url.full_url
-                else:
-                    response.url = url
+                response.url = req_url
                 return response
 
             pyodide_http._urllib.urlopen = modified_urlopen
