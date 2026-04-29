@@ -639,18 +639,28 @@
                 return req_url
 
             def modified_urlopen(url, *args, **kwargs):
-                req_url = None
-                if isinstance(url, pyodide_http._urllib.urllib.request.Request):
-                    req_url = url.full_url = prevent_mixed_content(url.full_url)
-
-                    if configs['cors'] == Cors.MV2_WEB_EXTENSION:
-                        update_url_with_cors_mv2_web_extension(url)
-                    elif configs['cors'] == Cors.PROXY:
-                        update_url_with_cors_proxy(url)
-                else:
-                    req_url = url = prevent_mixed_content(url)
+                req_obj = isinstance(url, pyodide_http._urllib.urllib.request.Request)
+                # corsproxy is the best solution for downloading mixed content.
+                # when this solution is not available, fallback to coercing all requested URLs to use the same protocol as the SPA.
+                if configs['cors'] != Cors.PROXY:
+                    if req_obj:
+                        url.full_url = prevent_mixed_content(url.full_url)
+                    else:
+                        url = prevent_mixed_content(url)
+                # the request URL, before any updates
+                old_req_url = url.full_url if req_obj else url
+                new_req_url = None
+                if configs['cors'] == Cors.MV2_WEB_EXTENSION:
+                    new_req_url = update_url_with_cors_mv2_web_extension(url, req_obj)
+                elif configs['cors'] == Cors.PROXY:
+                    new_req_url = update_url_with_cors_proxy(url, req_obj)
+                if new_req_url is not None:
+                    if req_obj:
+                        url.full_url = new_req_url
+                    else:
+                        url = new_req_url
                 response = original_urlopen(url, *args, **kwargs)
-                response.url = req_url
+                response.url = old_req_url
                 return response
 
             pyodide_http._urllib.urlopen = modified_urlopen
@@ -658,19 +668,21 @@
             # ------------------------------------------------------------------
             # Cors.MV2_WEB_EXTENSION
 
-            def update_url_with_cors_mv2_web_extension(url):
-                encoded_headers = []
-                for header_name, header_value in url.header_items():
-                    if not is_header_cors_safelisted(header_name, header_value):
-                        encoded_header_name = encode_forbidden_header_name(header_name)
-                        if encoded_header_name >= 0:
-                            encoded_header_name = str(encoded_header_name)
-                        else:
-                            encoded_header_name = encode_base64_value(header_name)
-                        encoded_header_value = encode_base64_value(header_value)
-                        encoded_headers.append(encoded_header_name + "=" + encoded_header_value)
-                        url.remove_header(header_name)
-                embed_encoded_headers_into_cors_safelisted_headers(url, encoded_headers)
+            def update_url_with_cors_mv2_web_extension(url, req_obj):
+                if req_obj:
+                    encoded_headers = []
+                    for header_name, header_value in url.header_items():
+                        if not is_header_cors_safelisted(header_name, header_value):
+                            encoded_header_name = encode_forbidden_header_name(header_name)
+                            if encoded_header_name >= 0:
+                                encoded_header_name = str(encoded_header_name)
+                            else:
+                                encoded_header_name = encode_base64_value(header_name)
+                            encoded_header_value = encode_base64_value(header_value)
+                            encoded_headers.append(encoded_header_name + "=" + encoded_header_value)
+                            url.remove_header(header_name)
+                    embed_encoded_headers_into_cors_safelisted_headers(url, encoded_headers)
+                return None
 
             cors_safelisted_header_names = ["accept", "accept-language", "content-language", "content-type", "range"]
             cors_safelisted_content_type_header_values = ["application/x-www-form-urlencoded", "multipart/form-data", "text/plain"]
@@ -749,15 +761,17 @@
             # ------------------------------------------------------------------
             # Cors.PROXY
 
-            def update_url_with_cors_proxy(url):
+            def update_url_with_cors_proxy(url, req_obj):
+                req_url = url.full_url if req_obj else url
                 qs_params = []
-                qs_params.append('url=' + js.window.encodeURIComponent(url.full_url))
+                qs_params.append('url=' + js.window.encodeURIComponent(req_url))
                 if configs['corsproxy_api_key']:
                     qs_params.append('key=' + js.window.encodeURIComponent(configs['corsproxy_api_key']))
-                for header_name, header_value in url.header_items():
-                    qs_params.append('reqHeaders=' + js.window.encodeURIComponent(header_name + ':' + (header_value or '')))
-                    url.remove_header(header_name)
-                url.full_url = configs['corsproxy_api_url'] + '?' + '&'.join(qs_params)
+                if req_obj:
+                    for header_name, header_value in url.header_items():
+                        qs_params.append('reqHeaders=' + js.window.encodeURIComponent(header_name + ':' + (header_value or '')))
+                        url.remove_header(header_name)
+                return configs['corsproxy_api_url'] + '?' + '&'.join(qs_params)
           `
         );
 
