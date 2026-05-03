@@ -39,6 +39,22 @@ list-page {
     right: 2rem;
 }
 
+#dates li > div.export {
+  display: block;
+  float: right;
+}
+#dates li > div.export button {
+  font-size: 0.75em;
+  padding: 0.1em;
+  width: auto;
+  height: auto;
+  border-color: #333;
+  background-color: #787878;
+  color: #ededed;
+  cursor: pointer;
+}
+
+#dates.deleteMode li > div.export,
 #dates.deleteMode ul li:after {
     display: none;
 }
