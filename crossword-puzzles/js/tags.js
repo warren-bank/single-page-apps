@@ -188,7 +188,7 @@ riot.tag('list-page', '<header class="page"> <h1>Puzzles</h1> <ul class="actions
             event.stopPropagation();
             if (! self.deleteMode) {
                 var url = event.item.url;
-                save_PUZ_URL_to_PDF_file(url);
+                save_PUZ_URL_to_PDF_file(url, /* conserve_ink= */ true);
             }
         }.bind(this);
 

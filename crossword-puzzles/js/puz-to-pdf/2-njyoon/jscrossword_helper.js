@@ -1,4 +1,4 @@
-var save_PUZ_URL_to_PDF_file = async function(url) {
+var save_PUZ_URL_to_PDF_file = async function(url, conserve_ink) {
     try {
         var res, data, xw, outname, options, doc;
 
@@ -38,7 +38,7 @@ var save_PUZ_URL_to_PDF_file = async function(url) {
             "clue_spacing": 0.30000000000000004,
             "heading_style": "bold",
             "number_style": "bold",
-            "shade": true,
+            "shade": !conserve_ink,
             "my_font": "",
             "bold_font": "",
             "header_font": "RobotoCondensed",

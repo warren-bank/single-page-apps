@@ -351,7 +351,13 @@ function draw_crossword_grid(doc, xw, options)
             if (true) {
                 doc.rect(x1, y1, cell_size, cell_size);
                 if (filled_string) {
-                    doc.rect(x1, y1, cell_size, cell_size, filled_string);
+                    if (options.shade) {
+                        doc.rect(x1, y1, cell_size, cell_size, filled_string);
+                    }
+                    else {
+                        doc.line(x1, y1, x1 + cell_size, y1 + cell_size);
+                        doc.line(x1, y1 + cell_size, x1 + cell_size, y1);
+                    }
                 }
             }
         }
