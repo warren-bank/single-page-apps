@@ -53,6 +53,9 @@ list-page {
   color: #ededed;
   cursor: pointer;
 }
+#dates li > div.export * + button {
+  margin-left: 0.5em;
+}
 
 #dates.deleteMode li > div.export,
 #dates.deleteMode ul li:after {
