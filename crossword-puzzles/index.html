@@ -28,8 +28,28 @@ of the GPL. See the file LICENSE for full details.
     <script src="js/loaders.js"></script>
     <script src="js/database.js"></script>
     <script src="js/dnd.js" defer></script>
-    <script src="js/puz-to-pdf/jscrossword_combined.js"></script>
-    <script src="js/puz-to-pdf/jscrossword_helper.js"></script>
+    <!-- puz-to-pdf -->
+    <!-- implementation #1: the original project -->
+    <!--
+    <script src="js/puz-to-pdf/1-crosswordnexus/jscrossword_combined.js"></script>
+    <script src="js/puz-to-pdf/1-crosswordnexus/jscrossword_helper.js"></script>
+    -->
+    <!-- implementation #2: a fork that produces much nicer output -->
+    <script src="js/puz-to-pdf/2-njyoon/grapheme-splitter.min.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/twemoji.min.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/jspdf.umd.min.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/RobotoCondensed-normal.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/RobotoCondensed-bold.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/RobotoCondensed-italic.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/RobotoCondensed-bolditalic.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/NunitoSans-Regular-normal.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/NunitoSans-Regular-bold.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/MH-normal.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/MH-bold.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/MH-italic.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/jscrossword_combined.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/puz_functions.js"></script>
+    <script src="js/puz-to-pdf/2-njyoon/jscrossword_helper.js"></script>
   </head>
 
   <body>

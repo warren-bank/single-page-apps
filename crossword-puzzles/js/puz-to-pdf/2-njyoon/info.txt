@@ -1,0 +1,5 @@
+https://njyoon.github.io/pdf.html
+https://github.com/njyoon/njyoon.github.io
+https://github.com/njyoon/njyoon.github.io/blob/main/pdf.html
+  commit: c3925b0a7f6237a3d725bc439d3f9bd08458df25
+  date:   Sep 6, 2025

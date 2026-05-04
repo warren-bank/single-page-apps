@@ -1,4 +1,4 @@
-JSCrossword.save_PUZ_URL_to_PDF_file = async function(url) {
+var save_PUZ_URL_to_PDF_file = async function(url) {
     try {
         var res, data, options, xw, doc, outname;
 
