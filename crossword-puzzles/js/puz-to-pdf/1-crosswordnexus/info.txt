@@ -1,2 +1,3 @@
 https://crosswordnexus.com/apps/puz-to-pdf/
 https://crosswordnexus.com/js/jscrossword/jscrossword_combined.js
+  [2026-05-03] date of snapshot: "jscrossword_combined.js"

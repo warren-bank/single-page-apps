@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>PUZ to PDF converter | Crossword Nexus</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <script src="../jscrossword_combined.js"></script>
+</head>
+<body>
+  <div id="content"> 
+  <div id="main">
+
+<h2><a target="_blank" href="https://crosswordnexus.com/apps/puz-to-pdf/">PUZ to PDF Converter</a></h2>
+
+Browse to a file in any supported format (puz, jpz, ipuz, cfp, vpuz, rg) and this app
+will create a PDF for printing and solving.  
+<br /><br />
+This application uses the JavaScript File API.  Your files are not uploaded to our server at any point.
+<br /><br />
+
+<input type="file" id="fileInput" accept=".puz,.xml,.jpz,.xpz,.ipuz,.cfp,.rg,.vpuz,.rgz">
+<button id="makePdfBtn" disabled>Make PDF</button>
+
+<h3>Advanced Options</h3>
+
+<div id="options_div">
+  <p>
+    <label for="cars">Number of columns:</label>
+    <select name="num_cols" id="num_cols">
+      <option value="null">AUTO</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+    </select>
+  </p>
+  <p>
+    <label for="num_full_cols">Number of "full" columns:</label>
+    <select name="num_full_cols" id="num_full_cols">
+      <option value="null">AUTO</option>
+    </select>
+  </p>
+  <p>Show notepad: <input type="checkbox" id="show_notepad_chk" /></p>
+  <p>(Rows Garden only) Alphabetize bloom clues: <input type="checkbox" id="thorny_chk" checked /></p>
+  <p><label for="options_textarea">Advanced options:</label></p>
+  <textarea id="options_textarea" name="options_textarea" rows=10 cols=30>{}</textarea>
+</div>
+
+<script>
+    let currentXw = null;
+
+    document.getElementById("fileInput").addEventListener("change", async function(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+
+      try {
+        const buf = await file.arrayBuffer();
+        const data = new Uint8Array(buf);
+        
+        // Options are only useful for RG
+        let options = {};
+        options['thorny'] = document.getElementById('thorny_chk').checked;
+
+        const xw = JSCrossword.fromData(data, options=options);
+        window.jsxw = xw; // for debugging
+        currentXw = xw;
+        document.getElementById("makePdfBtn").disabled = false;
+
+      } catch (err) {
+        console.error("File load failed:", err);
+        alert("Could not parse this file.");
+      }
+    });
+
+    document.getElementById("makePdfBtn").addEventListener("click", async function() {
+      if (!currentXw) {
+        alert("Please upload a crossword first.");
+        return;
+      }
+      try {
+        // grab options
+        let options_obj = JSON.parse(document.getElementById('options_textarea').value);
+        // add other options from dropdowns and such
+        options_obj['show_notepad'] = document.getElementById('show_notepad_chk').checked;
+        options_obj['num_columns'] = parseInt(document.getElementById('num_cols').value) || null;
+        if (document.getElementById('num_full_cols').value == 'AUTO') {
+          options_obj['num_full_columns'] = null;
+        } else {
+          options_obj['num_full_columns'] = parseInt(document.getElementById('num_full_cols').value);
+        }
+        
+        console.log(options_obj);
+        
+        let options = options_obj;
+        
+        const doc = await currentXw.toPDF(options);
+        let outname = currentXw.metadata.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.pdf';
+        doc.save(outname);
+      } catch (err) {
+        console.error("PDF generation failed:", err);
+        alert("Failed to create PDF. See console for details.");
+      }
+    });
+    
+    // change the "full" columns when "num columns" is changed
+    function setNumFullCols() {
+      let val = document.getElementById('num_cols').value;
+      val = parseInt(val) || 1;
+      // get the selectbox we want to change
+      const select = document.getElementById("num_full_cols");
+      // Clear any existing options
+      select.innerHTML = '';
+      // Create and append options
+      for (let i = 0; i <= val; i++) {
+          const option = document.createElement("option");
+          option.value = i-1;
+          option.text = i-1;
+          if (i == 0) {
+            option.value = 'null';
+            option.text = 'AUTO';
+          }
+          select.appendChild(option);
+      }
+    }
+    document.getElementById('num_cols').addEventListener('change', setNumFullCols, false);
+</script>
+
+</div> <!-- main -->
+</div> <!-- content -->
+
+</body>
+</html>
