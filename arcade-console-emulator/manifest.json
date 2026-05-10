@@ -1,0 +1,39 @@
+{
+    "name": "EmulatorJS Demo",
+    "short_name": "EmulatorJS",
+    "start_url": "./",
+    "id": "org.emulatorjs.demo",
+    "scope": "./",
+    "display": "standalone",
+    "background_color": "#000",
+    "theme_color": "#1AAFFF",
+    "orientation": "any",
+    "description": "EmulatorJS is a frontend for RetroArch in the web browser.",
+    "screenshots": [
+      {
+        "src": "./img/screenshot.png",
+        "type": "image/png",
+        "sizes": "2560x1440",
+        "form_factor": "wide"
+      },{
+        "src": "./img/mobile_screenshot.png",
+        "type": "image/png",
+        "sizes": "750x1333",
+        "form_factor": "narrow"
+      }
+    ],
+    "icons": [
+      {
+        "src": "./img/logo.png",
+        "type": "image/png",
+        "sizes": "512x512"
+      },
+      {
+        "src": "./img/icon.png",
+        "sizes": "489x489",
+        "type": "image/png",
+        "purpose": "maskable"
+      }
+    ]
+  }
+  
