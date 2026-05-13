@@ -3,6 +3,7 @@ html {
     height: 100%;
     background-color: black;
     color: white;
+    font-size: 16px;
 }
 
 body {
@@ -11,12 +12,25 @@ body {
 }
 
 body,
-#box,
-#top {
+#top,
+#url,
+#box {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
+}
+
+#url {
+    flex-direction: row;
+    width: 40em;
+    max-width: 80%;
+}
+#url > input#url_input {
+    flex-grow: 1;
+}
+#url > button#load_url {
+    flex-grow: 0;
 }
 
 #box {
@@ -94,16 +108,21 @@ button:hover {
 }
 
 #top,
+#url,
 #version {
     margin: 5px;
 }
 
+#url > button#load_url,
 #version button {
     fill: #aaa;
     width: auto;
     padding: 0.2em 0.3em;
     text-align: center;
     margin: 0.5em 0.1em;
+}
+#url > button#load_url {
+  margin: 0 0 0 0.5em;
 }
 
 #version svg {

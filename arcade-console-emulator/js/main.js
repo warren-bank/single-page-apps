@@ -1,3 +1,144 @@
+async function loadGame(url, filename) {
+    if (!url) return
+
+    const parts = filename ? filename.split(".") : [];
+    while (parts.length < 2) parts.push('')
+
+    const core = await (async (ext) => {
+        if (["gb", "gba", "n64", "nds", "nes", "ngp", "pce", "ws"].includes(ext))
+            return ext
+
+        if (["z64"].includes(ext))
+            return "n64"
+
+        if (["fds", "unf", "unif"].includes(ext))
+            return "nes"
+
+        if (["ngc"].includes(ext))
+            return "ngp"
+
+        if (["bsx", "dx2", "fig", "gd3", "gd7", "sfc", "smc", "swc"].includes(ext))
+            return "snes"
+
+        if (["wsc"].includes(ext))
+            return "ws"
+
+        if (["a26"].includes(ext))
+            return "atari2600"
+
+        if (["a78"].includes(ext))
+            return "atari7800"
+
+        if (["lnx"].includes(ext))
+            return "lynx"
+
+        if (["col", "cv"].includes(ext))
+            return "coleco"
+
+        if (["d64"].includes(ext))
+            return "vice_x64"
+
+        if (["32x"].includes(ext))
+            return "sega32x"
+
+        if (["gg"].includes(ext))
+            return "segaGG"
+
+        if (["sms"].includes(ext))
+            return "segaMS"
+
+        return await new Promise(resolve => {
+            const cores = {
+                "Atari 2600": "atari2600",
+                "Atari 7800": "atari7800",
+                "Atari Jaguar": "jaguar",
+                "Atari Lynx": "lynx",
+                "Bandai WonderSwan (Color)": "ws",
+                "ColecoVision": "coleco",
+                "Commodore 128": "vice_x128",
+                "Commodore 64": "vice_x64",
+                "Commodore PET": "vice_xpet",
+                "Commodore Plus/4": "vice_xplus4",
+                "Commodore VIC20": "vice_xvic",
+                "DOS": "dosbox_pure",
+                "NEC PC-FX": "pcfx",
+                "NEC TurboGrafx-16/SuperGrafx/PC Engine": "pce",
+                "Nintendo 64": "n64",
+                "Nintendo DS": "nds",
+                "Nintendo Entertainment System": "nes",
+                "Nintendo Game Boy Advance": "gba",
+                "Nintendo Game Boy": "gb",
+                "PlayStation Portable": "psp",
+                "PlayStation": "psx",
+                "SNK NeoGeo Pocket (Color)": "ngp",
+                "Sega 32X": "sega32x",
+                "Sega CD": "segaCD",
+                "Sega Game Gear": "segaGG",
+                "Sega Master System": "segaMS",
+                "Sega Mega Drive": "segaMD",
+                "Sega Saturn": "segaSaturn",
+                "Super Nintendo Entertainment System": "snes",
+                "Virtual Boy": "vb"
+            }
+
+            const button = document.createElement("button")
+            const select = document.createElement("select")
+
+            for (const type in cores) {
+                const option = document.createElement("option")
+
+                option.value = cores[type]
+                option.textContent = type
+                select.appendChild(option)
+            }
+
+            button.onclick = () => resolve(select[select.selectedIndex].value)
+            button.textContent = "Load game"
+            box.innerHTML = ""
+
+            box.appendChild(select)
+            box.appendChild(button)
+        })
+    })(parts.pop())
+
+    const div = document.createElement("div")
+    const sub = document.createElement("div")
+    const script = document.createElement("script")
+
+    sub.id = "game"
+    div.id = "display"
+
+    for (const id of ["top", "url", "version", "box"])
+      document.getElementById(id).remove();
+
+    div.appendChild(sub)
+    document.body.appendChild(div)
+
+    const cdn = window.cdn || "https://cdn.emulatorjs.org/stable/data/"
+
+    window.EJS_player = "#game";
+    window.EJS_gameName = parts.shift();
+    window.EJS_biosUrl = "";
+    window.EJS_gameUrl = url;
+    window.EJS_core = core;
+    window.EJS_pathtodata = cdn;
+    window.EJS_startOnLoaded = true;
+    //window.EJS_AdUrl = "ads.html";
+    window.EJS_DEBUG_XX = window.debug;
+    if (language.value !== "auto") {
+        window.EJS_language = language.value;
+    }
+    if (core === "psp" || core === "dosbox_pure") {
+        window.EJS_threads = true;
+    }
+    window.EJS_ready = function() {
+        //detectAdBlock("data:text/html;base64,DQo8aHRtbD48c3R5bGU+I2FkYmxvY2t7YmFja2dyb3VuZC1jb2xvcjpyZ2JhKDAsMCwwLC44KTtwb3NpdGlvbjpmaXhlZDt3aWR0aDoxMDAlO2hlaWdodDoxMDAlO3RvcDowO2xlZnQ6MDt6LWluZGV4OjEwMDA7dGV4dC1hbGlnbjpjZW50ZXI7Y29sb3I6I2ZmZn1ib2R5LGh0bWx7YmFja2dyb3VuZC1jb2xvcjp0cmFuc3BhcmVudH1hIHtjb2xvcjogIzAwYWZlNDt9PC9zdHlsZT48Ym9keSBzdHlsZT0ibWFyZ2luOjAiPjxkaXYgaWQ9ImFkYmxvY2siPjxoMT5IaSBBZGJsb2NrIFVzZXIhPC9oMT48cD5BZHMgb24gdGhpcyBwYWdlIG1heSBjb21lIGFuZCBnbyBkZXBlbmRpbmcgb24gaG93IG1hbnkgcGVvcGxlIGFyZSBmdW5kaW5nIHRoaXMgcHJvamVjdC48YnI+WW91IGNhbiBoZWxwIGZ1bmQgdGhpcyBwcm9qZWN0IG9uIDxhIHRhcmdldD0iX2Fib3V0IiBocmVmPSJodHRwczovL3BhdHJlb24uY29tL0VtdWxhdG9ySlMiPnBhdHJlb248L2E+PC9wPjwvZGl2PjwvYm9keT48L2h0bWw+");
+    }
+    
+    script.src = cdn + "loader.js";
+    document.body.appendChild(script);
+}
+
 function loadJSON(url, callback) {
     if (typeof fetch === 'function') {
         fetch(url)
@@ -146,11 +287,9 @@ function loadSettings() {
         systemLang = Intl.DateTimeFormat().resolvedOptions().locale;
     } catch(e) {}
     console.log("System language: " + systemLang);
-    const lang_select = document.getElementById("language");
-    loadLanguages(systemLang, lang_select);
-    lang_select.addEventListener("change", () => {
-        const selectedLang = lang_select.value;
-        window.language = selectedLang;
+    loadLanguages(systemLang, language);
+    language.addEventListener("change", () => {
+        const selectedLang = language.value;
         localStorage.setItem("language", selectedLang);
         console.log("Language changed to: " + selectedLang);
     });
@@ -229,17 +368,16 @@ function checkSettings(version) {
     if (version.includes("stable")) {
         version = version.replace("stable (", "").replace(")", "");
     }
-    const lang_select = document.getElementById("language");
     const langHelp = document.getElementById("languageHelp");
     if (version === "custom" || version === "latest" || version === "nightly" || version > "4.2.2") {
         console.log("Language Support: Enabled");
-        lang_select.disabled=false;
-        lang_select.style.width = "auto";
+        language.disabled=false;
+        language.style.width = "auto";
         langHelp.innerHTML = "";
     } else {
         console.log("Language Support: Disabled");
-        lang_select.disabled=true;
-        lang_select.style.width = "140px";
+        language.disabled=true;
+        language.style.width = "140px";
         langHelp.innerHTML = "Language selection isn't available for versions 4.2.2 and below.";
     }
 }
