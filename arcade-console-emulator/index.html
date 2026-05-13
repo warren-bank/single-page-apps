@@ -17,6 +17,7 @@
         </div>
         <div id="url">
             <input type="text" id="url_input">
+            <button id="import_urls">Import URLs</button>
             <button id="load_url">Load URL</button>
         </div>
         <div id="box">
@@ -89,6 +90,66 @@
                 const url      = url_input.value;
                 const filename = url.substring(url.lastIndexOf('/') + 1, url.length);
                 await loadGame(url, filename);
+            });
+
+            import_urls.addEventListener("click", async () => {
+                loadJSON('./json/urls.json', (json) => {
+                    try {
+                        const urls = JSON.parse(json);
+
+                        const console_select = document.createElement("select");
+                        const label_consoles = '-- Select Game Console --'
+                        const all_consoles = '-- all --';
+                        const consoles = [label_consoles, all_consoles, ...Object.keys(urls)]
+                        for (const console of consoles) {
+                            const option = document.createElement("option");
+                            option.value = console;
+                            option.textContent = console;
+                            console_select.appendChild(option);
+                        }
+
+                        console_select.addEventListener("change", () => {
+                            const selectedConsole = console_select.value;
+                            if (selectedConsole === label_consoles) return;
+
+                            const url_select = document.createElement("select");
+                            const label_urls = '-- Select Game --'
+                            let selected_data = [
+                                {url: label_urls, name: label_urls}
+                            ]
+
+                            if (selectedConsole === all_consoles) {
+                                for (const console in urls) {
+                                    const data = urls[console].map(dataitem => ({url: dataitem.url, name: `${console}: ${dataitem.name}`}));
+                                    selected_data = [...selected_data, ...data];
+                                }
+                            }
+                            else {
+                                const data = urls[selectedConsole];
+                                selected_data = [...selected_data, ...data];
+                            }
+
+                            for (const dataitem of selected_data) {
+                                const option = document.createElement("option");
+                                option.value = dataitem.url;
+                                option.textContent = dataitem.name;
+                                url_select.appendChild(option);
+                            }
+
+                            url_select.addEventListener("change", () => {
+                                const selectedUrl = url_select.value;
+                                if (selectedUrl === label_urls) return;
+
+                                url_input.value = selectedUrl;
+                            });
+
+                            console_select.parentNode.replaceChild(url_select, console_select);
+                        });
+
+                        import_urls.parentNode.replaceChild(console_select, import_urls);
+                    }
+                    catch(e) {}
+                })
             });
 
             box.ondragover = () => box.setAttribute("drag", true);

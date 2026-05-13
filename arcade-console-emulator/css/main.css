@@ -29,7 +29,8 @@ body,
 #url > input#url_input {
     flex-grow: 1;
 }
-#url > button#load_url {
+#url > button,
+#url > select {
     flex-grow: 0;
 }
 
@@ -113,7 +114,8 @@ button:hover {
     margin: 5px;
 }
 
-#url > button#load_url,
+#url > button,
+#url > select,
 #version button {
     fill: #aaa;
     width: auto;
@@ -121,7 +123,8 @@ button:hover {
     text-align: center;
     margin: 0.5em 0.1em;
 }
-#url > button#load_url {
+#url > button,
+#url > select {
   margin: 0 0 0 0.5em;
 }
 
