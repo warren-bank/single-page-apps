@@ -131,6 +131,15 @@ async function loadGame(url, filename) {
     if (core === "psp" || core === "dosbox_pure") {
         window.EJS_threads = true;
     }
+    if (document.getElementById("use_netplay_server").checked) {
+        const netplayServerUrl = document.getElementById("netplay_server_url").value;
+        const netplayGameId = parseInt(document.getElementById("netplay_server_game_id").value, 10);
+
+        if (netplayServerUrl && Number.isInteger(netplayGameId)) {
+            window.EJS_netplayServer = netplayServerUrl;
+            window.EJS_gameID = netplayGameId;
+        }
+    }
     window.EJS_ready = function() {
         //detectAdBlock("data:text/html;base64,DQo8aHRtbD48c3R5bGU+I2FkYmxvY2t7YmFja2dyb3VuZC1jb2xvcjpyZ2JhKDAsMCwwLC44KTtwb3NpdGlvbjpmaXhlZDt3aWR0aDoxMDAlO2hlaWdodDoxMDAlO3RvcDowO2xlZnQ6MDt6LWluZGV4OjEwMDA7dGV4dC1hbGlnbjpjZW50ZXI7Y29sb3I6I2ZmZn1ib2R5LGh0bWx7YmFja2dyb3VuZC1jb2xvcjp0cmFuc3BhcmVudH1hIHtjb2xvcjogIzAwYWZlNDt9PC9zdHlsZT48Ym9keSBzdHlsZT0ibWFyZ2luOjAiPjxkaXYgaWQ9ImFkYmxvY2siPjxoMT5IaSBBZGJsb2NrIFVzZXIhPC9oMT48cD5BZHMgb24gdGhpcyBwYWdlIG1heSBjb21lIGFuZCBnbyBkZXBlbmRpbmcgb24gaG93IG1hbnkgcGVvcGxlIGFyZSBmdW5kaW5nIHRoaXMgcHJvamVjdC48YnI+WW91IGNhbiBoZWxwIGZ1bmQgdGhpcyBwcm9qZWN0IG9uIDxhIHRhcmdldD0iX2Fib3V0IiBocmVmPSJodHRwczovL3BhdHJlb24uY29tL0VtdWxhdG9ySlMiPnBhdHJlb248L2E+PC9wPjwvZGl2PjwvYm9keT48L2h0bWw+");
     }
@@ -258,6 +267,42 @@ function loadSettings() {
     settingsClose.addEventListener("click", () => {
         document.getElementById("popup-settings").classList.remove("show");
     });
+
+    const netplayCheckbox = document.getElementById("use_netplay_server");
+    const netplayServerUrlInput = document.getElementById("netplay_server_url");
+    const netplayGameIdInput = document.getElementById("netplay_server_game_id");
+    netplayCheckbox.addEventListener("change", () => {
+        enableNetplay = netplayCheckbox.checked;
+        if (enableNetplay) {
+            localStorage.setItem("use_netplay_server", "true");
+            netplayServerUrlInput.parentElement.classList.remove("hide");
+            netplayGameIdInput.parentElement.classList.remove("hide");
+        } else {
+            localStorage.removeItem("use_netplay_server");
+            netplayServerUrlInput.parentElement.classList.add("hide");
+            netplayGameIdInput.parentElement.classList.add("hide");
+        }
+    });
+    netplayServerUrlInput.addEventListener("change", () => {
+        const netplayServerUrl = netplayServerUrlInput.value.trim();
+        if (netplayServerUrl) {
+            localStorage.setItem("netplay_server_url", netplayServerUrl);
+        } else {
+            localStorage.removeItem("netplay_server_url");
+        }
+    });
+    netplayGameIdInput.addEventListener("change", () => {
+        const netplayGameId = netplayGameIdInput.value.trim();
+        if (netplayGameId) {
+            localStorage.setItem("netplay_server_game_id", netplayGameId);
+        } else {
+            localStorage.removeItem("netplay_server_game_id");
+        }
+    });
+    netplayCheckbox.checked = localStorage.getItem("use_netplay_server") === "true";
+    netplayServerUrlInput.value = localStorage.getItem("netplay_server_url") || '';
+    netplayGameIdInput.value = localStorage.getItem("netplay_server_game_id") || '';
+    netplayCheckbox.dispatchEvent(new Event('change', {bubbles: true}));
 
     window.debug = false;
     const queryString = window.location.search;

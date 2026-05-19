@@ -217,13 +217,13 @@ button:hover {
 
 .popup .bottom {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     align-items: center;
     margin-top: 1em;
 }
 
 .buttonbox {
-    display: inline-flex;
+    display: flex;
     align-items: baseline;
     flex-wrap: wrap;
     margin-bottom: 0.2em;
@@ -245,6 +245,11 @@ button:hover {
     width: auto;
     font-size: 14px;
     height: 2em;
+}
+
+.buttonbox select,
+.buttonbox input[type="text"] {
+    flex-grow: 1;
 }
 
 .buttonbox button:disabled,

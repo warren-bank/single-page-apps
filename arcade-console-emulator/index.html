@@ -46,15 +46,18 @@
                     <h1>Settings</h1>
                 </div>
                 <div class="options">
-                    <div class="buttonbox"><p>Enable Debuging: <label class="switch"><input type="checkbox" id="debug"/><span class="slider round"></span></label></p></div><br>
-                    <div class="buttonbox"><p>Clean Cache: </p><button id="cache">Clean</button></div><br>
-                    <div class="buttonbox"><p>Language: </p><select id="language"></select> <p id="languageHelp"></p></div><br>
+                    <div class="buttonbox"><p>Use Netplay Server: <label class="switch"><input type="checkbox" id="use_netplay_server"/><span class="slider round"></span></label></p></div>
+                    <div class="buttonbox"><p>Netplay Server URL: </p><input type="text" id="netplay_server_url" placeholder="http://192.168.0.100:3000"></input></div>
+                    <div class="buttonbox"><p>Netplay Server Game ID: </p><input type="text" id="netplay_server_game_id" placeholder="123456"></input></div>
+                    <div class="buttonbox"><p>Enable Debuging: <label class="switch"><input type="checkbox" id="debug"/><span class="slider round"></span></label></p></div>
+                    <div class="buttonbox"><p>Clean Cache: </p><button id="cache">Clean</button></div>
+                    <div class="buttonbox"><p>Language: </p><select id="language"></select> <p id="languageHelp"></p></div>
                     <div class="buttonbox last"><p>Custom Path: </p><input type="text" id="customPath" placeholder="https://cdn.emulatorjs.org/stable/"></input> <p id="customPathValid"></p></div>
                     <p id="offline-status">Offline Status: CHECKING</p>
                     <p>Offline Cores will be available soon.</p>
                     <p class="hide">Remove All Saved Versions: <button id="remove-version" onclick="removeallsaved()">Remove All</button></p>
-                    <div id="installbox" class="buttonbox"><p id="installboxtext">Install PWA: </p><button id="install">Install</button></div><br>
-                    </div>
+                    <div id="installbox" class="buttonbox"><p id="installboxtext">Install PWA: </p><button id="install">Install</button></div>
+                </div>
                 <div class="bottom">
                     <button id="settings-close">Close</button>
                 </div>
