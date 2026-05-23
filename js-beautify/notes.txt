@@ -1,0 +1,43 @@
+--------------------------------------------------------------------------------
+
+https://beautifier.io/
+
+https://github.com/beautifier/js-beautify/tree/main/
+  js: source
+
+https://github.com/beautifier/js-beautify/tree/release/
+  js: built
+
+https://github.com/beautifier/js-beautify/commits/release/
+https://github.com/beautifier/js-beautify/tree/39c88935057e5c44921879aa540fe390ebb7332d
+  version: 1.15.4
+
+--------------------------------------------------------------------------------
+
+files:
+======
+
+https://github.com/beautifier/js-beautify/blob/release/index.html
+https://github.com/beautifier/js-beautify/tree/release/js/lib
+https://github.com/beautifier/js-beautify/tree/release/web
+
+--------------------------------------------------------------------------------
+
+bash:
+=====
+
+zip_file='release.zip'
+src_dir='js-beautify-release'
+
+wget -O "$zip_file" 'https://github.com/beautifier/js-beautify/archive/refs/heads/release.zip'
+unzip "$zip_file"
+
+mv "${src_dir}/index.html" .
+mkdir 'js'
+mv "${src_dir}/js/lib" ./js
+mv "${src_dir}/web" .
+
+rm -f "$zip_file"
+rm -rf "$src_dir"
+
+--------------------------------------------------------------------------------
