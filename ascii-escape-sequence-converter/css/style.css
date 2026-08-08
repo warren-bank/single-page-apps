@@ -1,0 +1,36 @@
+html {
+  font-size: 10px;
+}
+body {
+  margin: 2rem;
+  font-family: Mark Pro Book,Helvetica,Arial,sans-serif;
+  font-size: 1.6rem;
+}
+
+#contents {
+  width: 90%;
+  margin: 1em auto;
+  padding: 1em;
+}
+#contents > * {
+  display: block;
+  width: 100%;
+  margin: 1em 0;
+}
+
+#contents > header {
+  margin: 0;
+}
+#contents > header > a {
+  text-decoration: none;
+}
+#contents > header > a > h1 {
+  display: inline-block;
+  color: #ed2324;
+  font-size: 2rem;
+  margin: 0;
+}
+
+#contents > textarea {
+  height: 15em;
+}
