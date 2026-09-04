@@ -1,12 +1,27 @@
 body {
   min-height: 100%;
-  padding: 10px;
   font-size: 16px;
 }
-body > h1 {
+h1, h2, select, table {
+  width: 100%;
+}
+h1, h2,
+table th {
+  text-align: center;
+}
+h1, h2 {
   margin: 0;
   padding: 0;
+}
+h1 {
   font-size: 1.75em;
+}
+h2 {
+  font-size: 1.5em;
+}
+
+body {
+  padding: 10px;
 }
 body > h1 + div,
 body > div + div {
@@ -14,10 +29,6 @@ body > div + div {
   border-top: 1px solid black;
   padding-top: 10px;
 }
-h1, select, table {
-  width: 100%;
-}
-h1,
-table th {
-  text-align: center;
+body > div > table th h2 {
+  padding: 10px 0 20px 0;
 }

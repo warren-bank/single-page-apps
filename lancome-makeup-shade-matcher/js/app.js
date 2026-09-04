@@ -216,13 +216,14 @@ document.addEventListener("DOMContentLoaded", async (event) => {
 
     // heading
     {
-      let $tr, $th
+      let $tr, $th, $h2
 
       $tr = document.createElement('tr')
       $th = document.createElement('th')
       $th.setAttribute('colspan', '3')
-      $th.setAttribute('align', 'center')
-      $th.textContent = '-- Matches to Lancome Shade: ' + lancome_shade_id + ' --'
+      $h2 = document.createElement('h2')
+      $h2.textContent = '-- Matches to Lancôme Makeup Shade: ' + lancome_shade_id + ' --'
+      $th.appendChild($h2)
       $tr.appendChild($th)
       $table.appendChild($tr)
 
