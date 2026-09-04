@@ -1,0 +1,68 @@
+--------------------------------------------------------------------------------
+
+https://www.lancome-usa.com/makeup/face-makeup/foundation/teint-idole-ultra-wear-foundation/00716-LAC.html?dwvar_00716-LAC_color=220C
+
+--------------------------------------------------------------------------------
+
+https://findation.com/widget_searches/new?target_product_id=&api_key=e0d059bd20ec90c459ebd5930e016de653492796d676ba6e12217e461870&buttonHeight=40px&userId=&href=https%3A%2F%2Fwww.lancome-usa.com%2Fmakeup%2Fface-makeup%2Ffoundation%2Fteint-idole-ultra-wear-foundation%2F00716-LAC.html%3Fdwvar_00716-LAC_color%3D220C&rel=https%3A%2F%2Fwww.lancome-usa.com%2Fmakeup%2Fface-makeup%2Ffoundation%2Fteint-idole-ultra-wear-foundation%2F00716-LAC.html
+  match my shade
+  => ./index.html
+
+var Brands = [...];
+  => ./brands.json
+
+--------------------------------------------------------------------------------
+
+https://findation.com/products.json?api_key=e0d059bd20ec90c459ebd5930e016de653492796d676ba6e12217e461870&brand_id=762
+  brand = 762 = "100% Pure"
+  => ./brands/762.json
+
+https://findation.com/shades.json?api_key=e0d059bd20ec90c459ebd5930e016de653492796d676ba6e12217e461870&product_id=25005
+  brand   = 762   = "100% Pure"
+  product = 25005 = "Bamboo Blur Powder"
+  => ./products/762_25005.json
+
+curl -i 'https://findation.com/widget_searches?target_product_id=37623'
+  -X POST \
+  -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
+   --data-raw 'userId=&merchant_id=578&widget_id=565&merchant_product_id=16478&reset_session=&referrer=https%3A%2F%2Fwww.lancome-usa.com%2Fmakeup%2Fface-makeup%2Ffoundation%2Fteint-idole-ultra-wear-foundation%2F00716-LAC.html%3Fdwvar_00716-LAC_color%3D220C&brand=762&product=25005&shade_id=100363'
+====
+  brand   = 762    = "100% Pure"
+  product = 25005  = "Bamboo Blur Powder"
+  shade   = 100363 = Light
+====
+  302 redirect to GET URL
+====
+  result  = no match
+  => ./shades/762_25005_100363.html
+
+--------------------------------------------------------------------------------
+
+https://findation.com/products.json?api_key=e0d059bd20ec90c459ebd5930e016de653492796d676ba6e12217e461870&brand_id=7
+  brand = 7 = "CoverGirl"
+  => ./brands/762.json
+
+https://findation.com/shades.json?api_key=e0d059bd20ec90c459ebd5930e016de653492796d676ba6e12217e461870&product_id=43944
+  brand   = 7     = "CoverGirl"
+  product = 43944 = "Clean Invisible Foundation"
+  => ./products/7_43944.json
+
+brand='7'
+product='43944'
+shade='185724'
+
+curl -i 'https://findation.com/widget_searches?target_product_id=37623'
+  -X POST \
+  -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
+   --data-raw "userId=&merchant_id=578&widget_id=565&merchant_product_id=16478&reset_session=&referrer=https%3A%2F%2Fwww.lancome-usa.com%2Fmakeup%2Fface-makeup%2Ffoundation%2Fteint-idole-ultra-wear-foundation%2F00716-LAC.html%3Fdwvar_00716-LAC_color%3D220C&brand=${brand}&product=${product}&shade_id=${shade}"
+====
+  brand   = 7      = "CoverGirl"
+  product = 43944  = "Clean Invisible Foundation"
+  shade   = 185724 = "101 Porcelain"
+====
+  302 redirect to GET URL
+====
+  result  = <h1 data-js-swatch-name>120N</h1>
+  => ./shades/7_43944_185724.html
+
+--------------------------------------------------------------------------------

@@ -1,0 +1,27 @@
+
+  <div id="search-result" class="widget widget-show">
+    <p><img src="https://www.lancome-usa.com/on/demandware.static/-/Sites-lancome-us-Library/default/images/findation/findation-top-flower.png" alt="Lancome USA"></p>
+
+<p>
+  We couldn&rsquo;t find a match with Lancôme Teint Idole Ultra Wear Foundation (Reformulated 2023) and the shade you entered. <br/>
+
+You can try <a href="#" class="add-more">adding more shades</a>
+</p>
+
+  </div>
+
+<script type="text/template" id="search-result-script">
+  parent.postMessage(
+    {
+      eventName: "resultsWillRender",
+      resultHtml: $("#search-result").html()
+    },
+    "https://www.lancome-usa.com"
+  );
+
+  parent.postMessage(
+    {"eventName":"searchComplete","countShadesEntered":1,"matchSuccess":false,"shadesEntered":[{"fullName":"100% Pure Bamboo Blur Powder  - Light ","shadeName":"Light ","productName":"Bamboo Blur Powder ","brandName":"100% Pure"}],"userId":"r78sy6dJ2FWo--DGyVqHyJlo3g6PR0--IBICWWBLy40l/x1uuqvprA=="}
+  , "https://www.lancome-usa.com");
+
+</script>
+

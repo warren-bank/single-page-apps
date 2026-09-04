@@ -1,0 +1,23 @@
+body {
+  min-height: 100%;
+  padding: 10px;
+  font-size: 16px;
+}
+body > h1 {
+  margin: 0;
+  padding: 0;
+  font-size: 1.75em;
+}
+body > h1 + div,
+body > div + div {
+  margin-top: 10px;
+  border-top: 1px solid black;
+  padding-top: 10px;
+}
+h1, select, table {
+  width: 100%;
+}
+h1,
+table th {
+  text-align: center;
+}

@@ -1,0 +1,41 @@
+
+  <div id="search-result" class="widget-result widget-show">
+    <p><img src="https://www.lancome-usa.com/on/demandware.static/-/Sites-lancome-us-Library/default/images/findation/findation-top-flower.png" alt="Lancome USA"></p>
+
+<h3>We found your best match!</h3>
+
+<p>Based on the 1 shade you entered, your shade in
+  <strong>Lancôme Teint Idole Ultra Wear Foundation (Reformulated 2023)</strong>
+  <span>is</span>
+</p>
+
+<div class="findation-results--shade-container">
+<div class="swatch" data-js-swatch><span class="swatch-inner" data-js-swatch-inner></span></div>
+<h1 data-js-swatch-name>120N</h1>
+<input type="hidden" name="shadeName" value="120N">
+<input type="hidden" name="externalId" value="3614273793063">
+</div>
+
+<p>Improve your match by<br><a href="#" class="add-more">adding more shades</a> / <a href="#start-over">starting over</a></p>
+
+<p><br></p>
+
+<p><button class="shop-this-shade" onclick="sendWidgetAction({&quot;externalId&quot;:&quot;3614273793063&quot;,&quot;shadeName&quot;:&quot;120N&quot;});$(&quot;a.close&quot;).trigger(&quot;click&quot;);">Shop this Shade</button></p>
+
+  </div>
+
+<script type="text/template" id="search-result-script">
+  parent.postMessage(
+    {
+      eventName: "resultsWillRender",
+      resultHtml: $("#search-result").html()
+    },
+    "https://www.lancome-usa.com"
+  );
+
+  parent.postMessage(
+    {"eventName":"searchComplete","countShadesEntered":1,"matchSuccess":true,"shadesEntered":[{"fullName":"CoverGirl Clean Invisible Foundation - 101 Porcelain","shadeName":"101 Porcelain","productName":"Clean Invisible Foundation","brandName":"CoverGirl"}],"userId":"pWkimCH2Y0oo--icEOJnzYGkNegyJ1--Nxd427/8FsgbegnGg02EOw==","recommendedShade":"120N","externalId":"3614273793063"}
+  , "https://www.lancome-usa.com");
+
+</script>
+
