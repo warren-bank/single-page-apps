@@ -5,9 +5,11 @@
   <title>Lancôme Makeup Shade Matcher</title>
   <link rel="stylesheet" href="./css/style.css" />
   <script src="./js/app.js"></script>
+  <link rel="stylesheet" href="./modal/css/modal.css" />
+  <script src="./modal/js/modal.js"></script>
 </head>
 <body>
-  <h1>Lancôme Makeup Shade Matcher</h1>
+  <h1>Lancôme <a href="#" id="openModal">Makeup Shade</a> Matcher</h1>
   <div id="search_brands">
     <div><select id="brands"></select></div>
     <div><select id="products"></select></div>
@@ -18,6 +20,10 @@
   </div>
   <div id="brands_matching_selected_lancome_shade">
     <table></table>
+  </div>
+  <div id="imageModal" class="modal">
+    <button id="closeModal" class="close">&times;</button>
+    <div class="image"></div>
   </div>
 </body>
 </html>

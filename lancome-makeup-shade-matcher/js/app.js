@@ -344,8 +344,6 @@ document.addEventListener("DOMContentLoaded", async (event) => {
   // ---------------------------------------------------------------------------
   // bootstrap
 
-  cancel_event(event)
-
   populate_brands()
   populate_lancome_shades()
   add_event_listeners()
